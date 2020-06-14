@@ -6,3 +6,5 @@ set(CMAKE_CXX_FLAGS "-O2 -std=c++11 -fPIC -fopenmp")
 
 add_subdirectory (hanabi_learning_environment/hanabi_lib)
 add_subdirectory (hanabi_learning_environment)
+add_subdirectory (pybind11)
+add_subdirectory (hanabi_learning_environment/python)

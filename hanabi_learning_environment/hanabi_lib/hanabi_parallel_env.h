@@ -85,7 +85,11 @@ class HanabiParallelEnv {
 
   /** \brief Get observations for a specific agent.
    */
-  HanabiEncodedBatchObservation ObserveAgent(const int agent_id);
+  std::vector<HanabiObservation> ObserveAgent(const int agent_id);
+
+  /** \brief Get encoded observations for a specific agent.
+   */
+  HanabiEncodedBatchObservation ObserveAgentEncoded(const int agent_id);
 
   /** \brief Get a reference to the HanabiGame game.
    */

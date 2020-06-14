@@ -643,7 +643,7 @@ void _ParallelCopyBatchObservation(
   REQUIRE(batch_observation->done != nullptr);
   REQUIRE(batch_observation->scores != nullptr);
 
-  const auto batch_obs = hanabi_parallel_env->ObserveAgent(agent_id);
+  const auto batch_obs = hanabi_parallel_env->ObserveAgentEncoded(agent_id);
   std::copy(batch_obs.observation.begin(), batch_obs.observation.end(),
       batch_observation->observation);
   std::copy(batch_obs.legal_moves.begin(), batch_obs.legal_moves.end(),

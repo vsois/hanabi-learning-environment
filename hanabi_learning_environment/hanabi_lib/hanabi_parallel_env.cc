@@ -131,7 +131,7 @@ int hanabi_learning_env::HanabiParallelEnv::GetObservationFlatLength() const {
 
 
 hanabi_learning_env::HanabiParallelEnv::HanabiEncodedBatchObservation
-hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
+hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded(const int agent_id) {
   HanabiEncodedBatchObservation batch_observation(
       n_states_, GetObservationFlatLength(), MaxMoves());
   const auto player_ids = agent_player_mapping_[agent_id];
@@ -156,4 +156,19 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
     batch_observation.done[state_idx] = state.IsTerminal();
   }
   return batch_observation;
+}
+
+std::vector<hanabi_learning_env::HanabiObservation>
+hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
+  const auto player_ids = agent_player_mapping_[agent_id];
+  std::vector<HanabiObservation> observs;
+  observs.reserve(parallel_states_.size());
+  // #pragma omp parallel for
+  for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
+    const int player_idx = player_ids[state_idx];
+    const auto& state = parallel_states_[state_idx];
+    // const HanabiObservation observation(state, player_idx);
+    observs.emplace_back(state, player_idx);
+  }
+  return observs;
 }
