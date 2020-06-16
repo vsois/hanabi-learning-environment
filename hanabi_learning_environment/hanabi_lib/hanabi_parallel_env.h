@@ -109,10 +109,6 @@ class HanabiParallelEnv {
    */
   const std::vector<HanabiState>& GetStates() const {return parallel_states_;}
 
-  /** \brief Get the current score for each state.
-   */
-  std::vector<int> GetScores() const;
-
   /** \brief Get length of a single flattened encoded observation.
    */
   int GetObservationFlatLength() const;
@@ -135,6 +131,40 @@ class HanabiParallelEnv {
   /** \brief Reset the environment, i.e. reset all states to initial.
    */
   void Reset();
+
+  /** \brief Convert observations to one-hot encoded representation.
+   */
+  std::vector<std::vector<int8_t>> EncodeObservations(
+      const std::vector<HanabiObservation>& observations) const;
+
+  /** \brief Get game status for each state.
+   */
+  std::vector<HanabiState::EndOfGameType> GetStateStatuses() const;
+
+  /** \brief Get legal moves for each states for specified agent.
+   *
+   *  \param agent_id Id of the agent.
+   */
+  std::vector<std::vector<HanabiMove>> GetLegalMoves(const int agent_id) const;
+
+  /** \brief One-hot encode legal moves.
+   *
+   *  \param legal_moves Legal moves to encode.
+   */
+  std::vector<std::vector<int8_t>> EncodeLegalMoves(
+      const std::vector<std::vector<HanabiMove>>& legal_moves) const;
+  std::vector<std::vector<int8_t>> EncodeLegalMoves(
+      const std::vector<HanabiObservation>& observations) const;
+
+  /** \brief Get the current score for each state.
+   */
+  std::vector<int> GetScores() const;
+
+  /** \brief Check whether the supplied moves can be applied.
+   *
+   *  \param moves moves.
+   */
+  std::vector<bool> MovesAreLegal(std::vector<HanabiMove>& moves) const;
 
  private:
   /** \brief Create a new state and deal the cards.

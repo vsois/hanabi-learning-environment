@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include "hanabi_move.h"
 #include "hanabi_state.h"
 #include "util.h"
 #include "hanabi_parallel_env.h"
@@ -158,6 +159,7 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded(const int agent_id) 
   return batch_observation;
 }
 
+
 std::vector<hanabi_learning_env::HanabiObservation>
 hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
   const auto player_ids = agent_player_mapping_[agent_id];
@@ -171,4 +173,78 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
     observs.emplace_back(state, player_idx);
   }
   return observs;
+}
+
+std::vector<std::vector<int8_t>>
+hanabi_learning_env::HanabiParallelEnv::EncodeObservations(
+    const std::vector<hanabi_learning_env::HanabiObservation>& observations) const {
+  std::vector<std::vector<int8_t>> encoded_observations(n_states_);
+  #pragma omp parallel for
+  for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
+    const auto eobs = observation_encoder_.Encode(observations[state_idx]);
+    // encoded_observations[state_idx] = std::move(eobs);
+    std::move(eobs.begin(), eobs.end(), std::back_inserter(encoded_observations[state_idx]));
+  }
+  return encoded_observations;
+}
+
+std::vector<hanabi_learning_env::HanabiState::EndOfGameType>
+hanabi_learning_env::HanabiParallelEnv::GetStateStatuses() const {
+  std::vector<HanabiState::EndOfGameType> statuses;
+  for (const auto& state : parallel_states_) {
+    statuses.push_back(state.EndOfGameStatus());
+  }
+  return statuses;
+}
+
+std::vector<std::vector<hanabi_learning_env::HanabiMove>>
+hanabi_learning_env::HanabiParallelEnv::GetLegalMoves(const int agent_id) const {
+  std::vector<std::vector<HanabiMove>> lms;
+  const auto player_ids = agent_player_mapping_[agent_id];
+  for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
+    const int player_idx = player_ids[state_idx];
+    const auto& state = parallel_states_[state_idx];
+    lms.push_back(state.LegalMoves(player_idx));
+  }
+  return lms;
+}
+
+std::vector<std::vector<int8_t>>
+hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves(
+    const std::vector<hanabi_learning_env::HanabiObservation>& observations) const {
+  std::vector<std::vector<int8_t>> encoded_lms(n_states_);
+  #pragma omp parallel for
+  for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
+    const auto& state_lms = observations[state_idx].LegalMoves();
+    std::vector<int8_t> enc_state_lms(MaxMoves(), 0);
+    for (const auto& lm : state_lms) {
+      enc_state_lms[game_.GetMoveUid(lm)] = 1;
+    }
+    encoded_lms[state_idx] = (enc_state_lms);
+  }
+  return encoded_lms;
+}
+
+std::vector<std::vector<int8_t>>
+hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves(
+    const std::vector<std::vector<hanabi_learning_env::HanabiMove>>& lms) const {
+  std::vector<std::vector<int8_t>> encoded_lms(n_states_);
+  #pragma omp parallel for
+  for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
+    const auto& state_lms = lms[state_idx];
+    std::vector<int8_t> enc_state_lms(MaxMoves(), 0);
+    for (const auto& lm : state_lms) {
+      enc_state_lms[game_.GetMoveUid(lm)] = 1;
+    }
+    encoded_lms[state_idx] = (enc_state_lms);
+  }
+  return encoded_lms;
+}
+
+std::vector<bool> hanabi_learning_env::HanabiParallelEnv::MovesAreLegal(
+    std::vector<hanabi_learning_env::HanabiMove>& moves) const {
+  std::vector<bool> legal(n_states_);
+  std::transform(moves.begin(), moves.end(), parallel_states_.begin(),
+      legal.begin(), [](const HanabiMove& m, const HanabiState& s) {return s.MoveIsLegal(m);});
+  return legal;
 }
