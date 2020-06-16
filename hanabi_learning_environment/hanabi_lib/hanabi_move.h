@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <string>
+#include "hanabi_card.h"
 
 namespace hanabi_learning_env {
 
@@ -40,6 +41,14 @@ class HanabiMove {
         target_offset_(target_offset),
         color_(color),
         rank_(rank) {}
+
+  HanabiMove(Type move_type, int8_t card_index, int8_t target_offset,
+             HanabiCard card)
+      : move_type_(move_type),
+        card_index_(card_index),
+        target_offset_(target_offset),
+        color_(card.Color()),
+        rank_(card.Rank()) {}
   // Tests whether two moves are functionally equivalent.
   bool operator==(const HanabiMove& other_move) const;
   std::string ToString() const;
@@ -55,8 +64,8 @@ class HanabiMove {
   Type move_type_ = kInvalid;
   int8_t card_index_ = -1;
   int8_t target_offset_ = -1;
-  int8_t color_ = -1;
-  int8_t rank_ = -1;
+  int8_t color_ = HanabiCard::ColorType::kUnknownColor;
+  int8_t rank_ = HanabiCard::RankType::kUnknownRank;
 };
 
 }  // namespace hanabi_learning_env

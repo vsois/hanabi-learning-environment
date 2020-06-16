@@ -47,8 +47,12 @@ class HanabiState {
     int CardToIndex(int color, int rank) const {
       return color * num_ranks_ + rank;
     }
-    int IndexToColor(int index) const { return index / num_ranks_; }
-    int IndexToRank(int index) const { return index % num_ranks_; }
+    HanabiCard::ColorType IndexToColor(int index) const {
+      return static_cast<HanabiCard::ColorType>(index / num_ranks_);
+    }
+    HanabiCard::RankType IndexToRank(int index) const {
+      return static_cast<HanabiCard::RankType>(index % num_ranks_);
+    }
 
     // Number of instances in the deck for each card.
     // E.g., if card_count_[CardToIndex(card)] == 2, then there are two
