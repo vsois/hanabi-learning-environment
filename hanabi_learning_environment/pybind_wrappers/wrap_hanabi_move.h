@@ -8,13 +8,15 @@ void wrap_hanabi_move(py::module& m) {
   py::class_<hanabi_learning_env::HanabiMove> hanabi_move(m, "HanabiMove");
   hanabi_move
     .def(py::init<hanabi_learning_env::HanabiMove::Type, int8_t, int8_t, int8_t, int8_t>())
+    .def(py::init<hanabi_learning_env::HanabiMove::Type, int8_t, int8_t, hanabi_learning_env::HanabiCard::ColorType, hanabi_learning_env::HanabiCard::RankType>())
+    .def(py::init<hanabi_learning_env::HanabiMove::Type, int8_t, int8_t, hanabi_learning_env::HanabiCard>())
     .def("__eq__", &hanabi_learning_env::HanabiMove::operator==)
-    .def("MoveType", &hanabi_learning_env::HanabiMove::MoveType)
-    .def("IsValid", &hanabi_learning_env::HanabiMove::IsValid)
-    .def("CardIndex", &hanabi_learning_env::HanabiMove::CardIndex)
-    .def("TargetOffset", &hanabi_learning_env::HanabiMove::TargetOffset)
-    .def("Color", &hanabi_learning_env::HanabiMove::Color)
-    .def("Rank", &hanabi_learning_env::HanabiMove::Rank)
+    .def("move_type", &hanabi_learning_env::HanabiMove::MoveType)
+    .def("is_valid", &hanabi_learning_env::HanabiMove::IsValid)
+    .def("card_index", &hanabi_learning_env::HanabiMove::CardIndex)
+    .def("target_offset", &hanabi_learning_env::HanabiMove::TargetOffset)
+    .def("color", &hanabi_learning_env::HanabiMove::Color)
+    .def("rank", &hanabi_learning_env::HanabiMove::Rank)
     .def("__str__", &hanabi_learning_env::HanabiMove::ToString);
 
   py::enum_<hanabi_learning_env::HanabiMove::Type>(hanabi_move, "Type")
@@ -23,5 +25,6 @@ void wrap_hanabi_move(py::module& m) {
     .value("kDiscard", hanabi_learning_env::HanabiMove::Type::kDiscard)
     .value("kRevealColor", hanabi_learning_env::HanabiMove::Type::kRevealColor)
     .value("kRevealRank", hanabi_learning_env::HanabiMove::Type::kRevealRank)
-    .value("kDeal", hanabi_learning_env::HanabiMove::Type::kDeal);
+    .value("kDeal", hanabi_learning_env::HanabiMove::Type::kDeal)
+    .export_values();
 }

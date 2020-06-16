@@ -1,5 +1,4 @@
-# target_link_libraries (PyHanabi LINK_PUBLIC hanabi)
-pybind11_add_module(PyHanabi pyhanabi.cc)
-target_link_libraries(PyHanabi PRIVATE hanabi)
+pybind11_add_module(pyhanabi_pybind pyhanabi_pybind.cc)
+target_link_libraries(pyhanabi_pybind PRIVATE hanabi)
 
-install(TARGETS PyHanabi LIBRARY DESTINATION hanabi_learning_environment)
+install(TARGETS pyhanabi_pybind LIBRARY DESTINATION hanabi_learning_environment)

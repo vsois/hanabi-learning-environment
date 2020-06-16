@@ -10,7 +10,7 @@
 #include "wrap_hanabi_observation.h"
 #include "wrap_hanabi_parallel_env.h"
 
-PYBIND11_MODULE(PyHanabi, m) {
+PYBIND11_MODULE(pyhanabi_pybind, m) {
   wrap_hanabi_card(m);
   wrap_hanabi_hand(m);
   wrap_hanabi_move(m);
