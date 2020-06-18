@@ -22,22 +22,26 @@ void wrap_hanabi_state(py::module& m) {
     .def("chance_outcome_prob", &hanabi_learning_env::HanabiState::ChanceOutcomeProb)
     .def("apply_chance_outcome", &hanabi_learning_env::HanabiState::ApplyChanceOutcome)
     .def("apply_random_chance", &hanabi_learning_env::HanabiState::ApplyRandomChance)
-    .def("chance_outcomes", &hanabi_learning_env::HanabiState::ChanceOutcomes)
-    .def("end_of_game_status", &hanabi_learning_env::HanabiState::EndOfGameStatus)
+    .def_property_readonly("chance_outcomes", &hanabi_learning_env::HanabiState::ChanceOutcomes)
+    .def_property_readonly("end_of_game_status", &hanabi_learning_env::HanabiState::EndOfGameStatus)
     .def("is_terminal", &hanabi_learning_env::HanabiState::IsTerminal)
-    .def("score", &hanabi_learning_env::HanabiState::Score)
-    .def("cur_player", &hanabi_learning_env::HanabiState::CurPlayer)
-    .def("life_tokens", &hanabi_learning_env::HanabiState::LifeTokens)
-    .def("information_tokens", &hanabi_learning_env::HanabiState::InformationTokens)
-    .def("hands", &hanabi_learning_env::HanabiState::Hands)
-    .def("fireworks", &hanabi_learning_env::HanabiState::Fireworks)
-    .def("parent_game", &hanabi_learning_env::HanabiState::ParentGame)
-    .def("deck", &hanabi_learning_env::HanabiState::Deck)
-    .def("discard_pile", &hanabi_learning_env::HanabiState::DiscardPile)
-    .def("move_history", &hanabi_learning_env::HanabiState::MoveHistory)
+    .def_property_readonly("score", &hanabi_learning_env::HanabiState::Score)
+    .def_property_readonly("current_player", &hanabi_learning_env::HanabiState::CurPlayer)
+    .def_property_readonly("life_tokens", &hanabi_learning_env::HanabiState::LifeTokens)
+    .def_property_readonly("information_tokens", &hanabi_learning_env::HanabiState::InformationTokens)
+    .def_property_readonly("hands", &hanabi_learning_env::HanabiState::Hands)
+    .def_property_readonly("fireworks", &hanabi_learning_env::HanabiState::Fireworks)
+    // .def_property_readonly("parent_game", &hanabi_learning_env::HanabiState::ParentGame)
+    .def_property_readonly("deck", &hanabi_learning_env::HanabiState::Deck)
+    .def_property_readonly("discard_pile", &hanabi_learning_env::HanabiState::DiscardPile)
+    .def_property_readonly("move_history", &hanabi_learning_env::HanabiState::MoveHistory)
     
     .def("__str__", &hanabi_learning_env::HanabiState::ToString)
-    .def("__repr__", &hanabi_learning_env::HanabiState::ToString);
+    .def("__repr__", 
+         [](const hanabi_learning_env::HanabiState& s) {
+            return "<HanabiState " + s.ToString() + ">";
+         }
+    );
 
   py::enum_<hanabi_learning_env::HanabiState::EndOfGameType>(hanabi_state, "EndOfGameType")
     .value("kNotFinished", hanabi_learning_env::HanabiState::EndOfGameType::kNotFinished)

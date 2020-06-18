@@ -125,7 +125,7 @@ void hanabi_learning_env::HanabiParallelEnv::ApplyBatchMove(
 }
 
 int hanabi_learning_env::HanabiParallelEnv::GetObservationFlatLength() const {
-  const auto obs_shape = GetObservationShape();
+  const auto obs_shape = EncodedObservationShape();
   return std::accumulate(
             obs_shape.begin(), obs_shape.end(), 1, std::multiplies<int>());
 }
@@ -134,7 +134,7 @@ int hanabi_learning_env::HanabiParallelEnv::GetObservationFlatLength() const {
 hanabi_learning_env::HanabiParallelEnv::HanabiEncodedBatchObservation
 hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded(const int agent_id) {
   HanabiEncodedBatchObservation batch_observation(
-      n_states_, GetObservationFlatLength(), MaxMoves());
+      n_states_, GetObservationFlatLength(), game_.MaxMoves());
   const auto player_ids = agent_player_mapping_[agent_id];
   #pragma omp parallel for
   for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
@@ -149,7 +149,7 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded(const int agent_id) 
                                 vec_observ_iter);
     // gather legal moves
     auto lm_iter =
-        batch_observation.legal_moves.begin() + state_idx * MaxMoves();
+        batch_observation.legal_moves.begin() + state_idx * game_.MaxMoves();
     for (const auto& lm : state.LegalMoves(player_idx)) {
       *(lm_iter + game_.GetMoveUid(lm)) = 1;
     }
@@ -216,7 +216,7 @@ hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves(
   #pragma omp parallel for
   for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
     const auto& state_lms = observations[state_idx].LegalMoves();
-    std::vector<int8_t> enc_state_lms(MaxMoves(), 0);
+    std::vector<int8_t> enc_state_lms(game_.MaxMoves(), 0);
     for (const auto& lm : state_lms) {
       enc_state_lms[game_.GetMoveUid(lm)] = 1;
     }
@@ -232,7 +232,7 @@ hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves(
   #pragma omp parallel for
   for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
     const auto& state_lms = lms[state_idx];
-    std::vector<int8_t> enc_state_lms(MaxMoves(), 0);
+    std::vector<int8_t> enc_state_lms(game_.MaxMoves(), 0);
     for (const auto& lm : state_lms) {
       enc_state_lms[game_.GetMoveUid(lm)] = 1;
     }

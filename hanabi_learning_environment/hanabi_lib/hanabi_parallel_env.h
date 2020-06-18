@@ -93,21 +93,20 @@ class HanabiParallelEnv {
 
   /** \brief Get a reference to the HanabiGame game.
    */
-  const HanabiGame& GetGame() const {return game_;}
-  // HanabiGame& GetGame() {return game_;}
+  const HanabiGame& ParentGame() const {return game_;}
 
   /** \brief Get a pointer to the HanabiGame game.
    */
-  HanabiGame* GetGamePtr() {return &game_;}
-  const HanabiGame* GetGamePtr() const {return &game_;}
+  HanabiGame* GetParentGamePtr() {return &game_;}
+  const HanabiGame* GetParentGamePtr() const {return &game_;}
 
   /** \brief Get shape of a single encoded observation.
    */
-  std::vector<int> GetObservationShape() const {return observation_encoder_.Shape();};
+  std::vector<int> EncodedObservationShape() const {return observation_encoder_.Shape();};
 
   /** \brief Get a const reference to the parallel states.
    */
-  const std::vector<HanabiState>& GetStates() const {return parallel_states_;}
+  const std::vector<HanabiState>& States() const {return parallel_states_;}
 
   /** \brief Get length of a single flattened encoded observation.
    */
@@ -115,11 +114,7 @@ class HanabiParallelEnv {
 
   /** \brief Number of parallel states in this environment.
    */
-  int GetNumStates() const {return n_states_;};
-
-  /** \brief Number of possible moves for this a game in this environment.
-   */
-  int MaxMoves() const {return game_.MaxMoves();}
+  int NumStates() const {return n_states_;};
 
   /** \brief Check for states that are terminal and create new ones instead of those.
    *

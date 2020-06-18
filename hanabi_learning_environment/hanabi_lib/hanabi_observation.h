@@ -45,7 +45,7 @@ class HanabiObservation {
   const std::vector<int>& Fireworks() const { return fireworks_; }
   int DeckSize() const { return deck_size_; }  // number of remaining cards
   const HanabiGame* ParentGame() const { return parent_game_; }
-  const HanabiGame& GetGame() const { return *parent_game_; }
+  const HanabiGame& ParentGameRef() const { return *parent_game_; }
   // Moves made since observing_player's last action, most recent to oldest
   // (that is, last_moves[0] is the most recent move.)
   // Move targets are relative to observing_player not acting_player.

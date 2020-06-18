@@ -669,24 +669,24 @@ void ParallelParentGame(pyhanabi_game_t* parent_game,
   REQUIRE(parallel_env->parallel_env != nullptr);
   REQUIRE(parent_game != nullptr);
   parent_game->game = reinterpret_cast<hanabi_learning_env::HanabiParallelEnv*>(
-      parallel_env->parallel_env)->GetGamePtr();
+      parallel_env->parallel_env)->GetParentGamePtr();
   REQUIRE(parent_game->game != nullptr);
 }
 
 int ParallelMaxMoves(const pyhanabi_parallel_env_t* parallel_env) {
   return reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
-            parallel_env->parallel_env)->GetGame().MaxMoves();
+            parallel_env->parallel_env)->ParentGame().MaxMoves();
 }
 
 int ParallelNumStates(const pyhanabi_parallel_env_t* parallel_env) {
   return reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
-            parallel_env->parallel_env)->GetNumStates();
+            parallel_env->parallel_env)->NumStates();
 }
 
 int ParallelObservationLength(const pyhanabi_parallel_env_t* parallel_env) {
   auto obs_shape =
       reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
-          parallel_env->parallel_env)->GetObservationShape();
+          parallel_env->parallel_env)->EncodedObservationShape();
   return std::accumulate(obs_shape.begin(), obs_shape.end(), 1,
             std::multiplies<int>());
 }
@@ -739,11 +739,11 @@ void NewBatchObservation(pyhanabi_batch_observation_t* batch_observation,
   const auto hanabi_parallel_env =
       reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
           parallel_env->parallel_env);
-  const int n_states = hanabi_parallel_env->GetNumStates();
-  const auto obs_shape = hanabi_parallel_env->GetObservationShape();
+  const int n_states = hanabi_parallel_env->NumStates();
+  const auto obs_shape = hanabi_parallel_env->EncodedObservationShape();
   const int obs_len = std::accumulate(obs_shape.begin(), obs_shape.end(), 1,
       std::multiplies<int>());
-  const int max_moves = hanabi_parallel_env->GetGame().MaxMoves();
+  const int max_moves = hanabi_parallel_env->ParentGame().MaxMoves();
 
   REQUIRE(n_states > 0);
   REQUIRE(obs_len > 0);

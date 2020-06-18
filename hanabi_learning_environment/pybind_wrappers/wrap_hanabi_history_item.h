@@ -17,5 +17,10 @@ void wrap_hanabi_history_item(py::module& m) {
     .def_readonly("newly_revealed_bitmask", &hanabi_learning_env::HanabiHistoryItem::newly_revealed_bitmask)
     .def_readonly("deal_to_player", &hanabi_learning_env::HanabiHistoryItem::deal_to_player)
 
-    .def("__str__", &hanabi_learning_env::HanabiHistoryItem::ToString);
+    .def("__str__", &hanabi_learning_env::HanabiHistoryItem::ToString)
+    .def("__repr__",
+         [](const hanabi_learning_env::HanabiHistoryItem& h) {
+            return "<HanabiHistoryItem " + h.ToString() + ">";
+         }
+    );
 }
