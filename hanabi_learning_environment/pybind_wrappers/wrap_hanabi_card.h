@@ -1,48 +1,51 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "../hanabi_lib/hanabi_card.h"
+#include "representations.h"
 
 namespace py = pybind11;
+namespace hle = hanabi_learning_env;
 
 void wrap_hanabi_card(py::module& m) {
-  py::class_<hanabi_learning_env::HanabiCard> hanabi_card(m, "HanabiCard");
+  py::class_<hle::HanabiCard> hanabi_card(m, "HanabiCard");
   hanabi_card
-    .def(py::init<hanabi_learning_env::HanabiCard::ColorType,
-                  hanabi_learning_env::HanabiCard::RankType>()
+    .def(py::init<hle::HanabiCard::ColorType,
+                  hle::HanabiCard::RankType>(),
+         py::arg("color"),
+         py::arg("rank")
     )
     .def(py::init())
-    .def("__eq__", &hanabi_learning_env::HanabiCard::operator==)
-    .def("is_valid", &hanabi_learning_env::HanabiCard::IsValid)
-    .def_property_readonly("color", &hanabi_learning_env::HanabiCard::Color)
-    .def_property_readonly("rank", &hanabi_learning_env::HanabiCard::Rank)
-
-    .def("__repr__",
-        [](const hanabi_learning_env::HanabiCard& c) {
-          return "<HanabiCard " + c.ToString() + ">";
-        }
+    .def("__eq__", &hle::HanabiCard::operator==)
+    .def("is_valid",
+         &hle::HanabiCard::IsValid,
+         "True if card's color and rank are valid"
     )
-    .def("__str__", &hanabi_learning_env::HanabiCard::ToString);
+    .def_property_readonly("color", &hle::HanabiCard::Color)
+    .def_property_readonly("rank", &hle::HanabiCard::Rank)
 
-  py::enum_<hanabi_learning_env::HanabiCard::ColorType>(
+    .def("__repr__", &hanabi_card_repr)
+    .def("__str__", &hle::HanabiCard::ToString);
+
+  py::enum_<hle::HanabiCard::ColorType>(
       hanabi_card, "ColorType")
-    .value("kRed", hanabi_learning_env::HanabiCard::ColorType::kRed)
-    .value("kYellow", hanabi_learning_env::HanabiCard::ColorType::kYellow)
-    .value("kGreen", hanabi_learning_env::HanabiCard::ColorType::kGreen)
-    .value("kWhite", hanabi_learning_env::HanabiCard::ColorType::kWhite)
-    .value("kBlue", hanabi_learning_env::HanabiCard::ColorType::kBlue)
+    .value("kRed", hle::HanabiCard::ColorType::kRed)
+    .value("kYellow", hle::HanabiCard::ColorType::kYellow)
+    .value("kGreen", hle::HanabiCard::ColorType::kGreen)
+    .value("kWhite", hle::HanabiCard::ColorType::kWhite)
+    .value("kBlue", hle::HanabiCard::ColorType::kBlue)
     .value("kUnknownColor",
-           hanabi_learning_env::HanabiCard::ColorType::kUnknownColor
+           hle::HanabiCard::ColorType::kUnknownColor
     )
     .export_values();
 
-  py::enum_<hanabi_learning_env::HanabiCard::RankType>(hanabi_card, "RankType")
-    .value("k1", hanabi_learning_env::HanabiCard::RankType::k1)
-    .value("k2", hanabi_learning_env::HanabiCard::RankType::k2)
-    .value("k3", hanabi_learning_env::HanabiCard::RankType::k3)
-    .value("k4", hanabi_learning_env::HanabiCard::RankType::k4)
-    .value("k5", hanabi_learning_env::HanabiCard::RankType::k5)
+  py::enum_<hle::HanabiCard::RankType>(hanabi_card, "RankType")
+    .value("k1", hle::HanabiCard::RankType::k1)
+    .value("k2", hle::HanabiCard::RankType::k2)
+    .value("k3", hle::HanabiCard::RankType::k3)
+    .value("k4", hle::HanabiCard::RankType::k4)
+    .value("k5", hle::HanabiCard::RankType::k5)
     .value("kUnknownRank",
-           hanabi_learning_env::HanabiCard::RankType::kUnknownRank
+           hle::HanabiCard::RankType::kUnknownRank
     )
     .export_values();
 }

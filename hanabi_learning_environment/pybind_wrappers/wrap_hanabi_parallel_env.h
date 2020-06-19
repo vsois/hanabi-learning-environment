@@ -1,50 +1,105 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "../hanabi_lib/hanabi_parallel_env.h"
+#include "representations.h"
 
 namespace py = pybind11;
+namespace hle = hanabi_learning_env;
 
 void wrap_hanabi_parallel_env(py::module& m) {
-  // py::class_<StateVector>(m, "StateVector");
-  py::class_<hanabi_learning_env::HanabiParallelEnv>(m, "HanabiParallelEnv")
-    .def(py::init<const std::unordered_map<std::string, std::string>&, const int>())
+  py::class_<hle::HanabiParallelEnv>(m, "HanabiParallelEnv")
+    .def(py::init<const std::unordered_map<std::string, std::string>&,
+                  const int>(),
+         py::arg("game_parameters"),
+         py::arg("n_states")
+    )
     .def("apply_batch_move",
-         (void (hanabi_learning_env::HanabiParallelEnv::*) (const std::vector<int>&, const int)) &hanabi_learning_env::HanabiParallelEnv::ApplyBatchMove,
+         (void (hle::HanabiParallelEnv::*) (const std::vector<int>&, const int))
+            &hle::HanabiParallelEnv::ApplyBatchMove,
+         py::arg("batch_move_ids"),
+         py::arg("agent_id"),
          "Apply moves specified as integers.")
     .def("apply_batch_move",
-         (void (hanabi_learning_env::HanabiParallelEnv::*) (const std::vector<hanabi_learning_env::HanabiMove>&, const int)) &hanabi_learning_env::HanabiParallelEnv::ApplyBatchMove,
+         (void (hle::HanabiParallelEnv::*) 
+              (const std::vector<hle::HanabiMove>&, const int))
+            &hle::HanabiParallelEnv::ApplyBatchMove,
+         py::arg("batch_move"),
+         py::arg("agent_id"),
          "Apply moves specified as instances of HanabiMove.")
-    .def("observe_agent", &hanabi_learning_env::HanabiParallelEnv::ObserveAgent)
-    .def("observe_agent_encoded", &hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded)
-    .def_property_readonly("parent_game", &hanabi_learning_env::HanabiParallelEnv::ParentGame)
-    .def("observation_shape", &hanabi_learning_env::HanabiParallelEnv::EncodedObservationShape)
-    .def_property_readonly("states", &hanabi_learning_env::HanabiParallelEnv::States)
-    // .def("GetStates",
-    //     [](const hanabi_learning_env::HanabiParallelEnv &env)
-    //     { return py::make_iterator(env.GetStates().begin(), env.GetStates().end());})
-    // .def_readonly("GetStates", &hanabi_learning_env::HanabiParallelEnv::GetStates)
-    .def("get_observation_flat_length", &hanabi_learning_env::HanabiParallelEnv::GetObservationFlatLength)
-    .def_property_readonly("num_states", &hanabi_learning_env::HanabiParallelEnv::NumStates)
-    .def("reset_states", &hanabi_learning_env::HanabiParallelEnv::ResetStates)
-    .def("reset", &hanabi_learning_env::HanabiParallelEnv::Reset)
-    .def("encode_observations", &hanabi_learning_env::HanabiParallelEnv::EncodeObservations)
-    .def("get_state_statuses", &hanabi_learning_env::HanabiParallelEnv::GetStateStatuses)
-    .def("get_legal_moves", &hanabi_learning_env::HanabiParallelEnv::GetLegalMoves)
+    .def("observe_agent",
+         &hle::HanabiParallelEnv::ObserveAgent,
+         py::arg("agent_id"),
+         "Get observations for the specified agent."
+    )
+    .def("observe_agent_encoded",
+         &hle::HanabiParallelEnv::ObserveAgentEncoded,
+         py::arg("agent_id"),
+         "Get encoded observations for the specified agent."
+    )
+    .def_property_readonly(
+        "parent_game",
+        &hle::HanabiParallelEnv::ParentGame,
+        "Access the underlying parent HanabiGame."
+    )
+    .def("encoded_observation_shape",
+         &hle::HanabiParallelEnv::EncodedObservationShape,
+         "Shape of a single (state's) encoded observation."
+    )
+    .def_property_readonly("states", &hle::HanabiParallelEnv::States)
+    .def("get_observation_flat_length",
+         &hle::HanabiParallelEnv::GetObservationFlatLength,
+         "Shape of a single (state's) encoded observation flattened."
+    )
+    .def_property_readonly("num_states", &hle::HanabiParallelEnv::NumStates)
+    .def("reset_states",
+         &hle::HanabiParallelEnv::ResetStates,
+         py::arg("state_ids"),
+         py::arg("current_agent_id"),
+         "Replace specified states with new ones with agent as current player."
+    )
+    .def("reset",
+        &hle::HanabiParallelEnv::Reset,
+        "Completely reset the environment."
+        )
+    .def("encode_observations",
+         &hle::HanabiParallelEnv::EncodeObservations,
+         py::arg("observations"),
+         "Convert observations to one-hot encoded representation."
+    )
+    .def("get_state_statuses",
+         &hle::HanabiParallelEnv::GetStateStatuses,
+         "Get game status (see HanabiState.EndOfGameType) for each state."
+    )
+    .def("get_legal_moves",
+         &hle::HanabiParallelEnv::GetLegalMoves,
+         py::arg("agent_id"),
+         "Get legal moves for each states for specified agent."
+    )
     .def("encode_legal_moves",
-        (std::vector<std::vector<int8_t>>
-         (hanabi_learning_env::HanabiParallelEnv::*)
-         (const std::vector<hanabi_learning_env::HanabiObservation>&) const)
-            &hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves)
+         (std::vector<std::vector<int8_t>>
+              (hle::HanabiParallelEnv::*) 
+              (const std::vector<hle::HanabiObservation>&) const)
+            &hle::HanabiParallelEnv::EncodeLegalMoves,
+         py::arg("observations"),
+         "One-hot encode legal moves."
+    )
+
     .def("encode_legal_moves",
-        (std::vector<std::vector<int8_t>>
-         (hanabi_learning_env::HanabiParallelEnv::*)
-         (const std::vector<std::vector<hanabi_learning_env::HanabiMove>>&) const)
-        &hanabi_learning_env::HanabiParallelEnv::EncodeLegalMoves)
-    .def("get_scores", &hanabi_learning_env::HanabiParallelEnv::GetScores)
-    .def("moves_are_legal", &hanabi_learning_env::HanabiParallelEnv::MovesAreLegal)
-    .def("__repr__",
-         [](const hanabi_learning_env::HanabiParallelEnv& e) {
-            return "<HanabiParallelEnv >";
-         }
-    );
+         (std::vector<std::vector<int8_t>>
+              (hle::HanabiParallelEnv::*)
+              (const std::vector<std::vector<hle::HanabiMove>>&) const)
+            &hle::HanabiParallelEnv::EncodeLegalMoves,
+         py::arg("legal_moves"),
+         "One-hot encode legal moves."
+    )
+    .def("get_scores", &hle::HanabiParallelEnv::GetScores)
+    .def("moves_are_legal",
+         &hle::HanabiParallelEnv::MovesAreLegal,
+         py::arg("moves"),
+         "Check whether the supplied moves can be applied. "
+         "Number of moves must be equal to number of states."
+    )
+    .def("__repr__", &hanabi_parallel_env_repr)
+
+    .doc() = "An environment that handles multiple HanabiStates in parallel.";
 }

@@ -245,6 +245,9 @@ std::vector<bool> hanabi_learning_env::HanabiParallelEnv::MovesAreLegal(
     std::vector<hanabi_learning_env::HanabiMove>& moves) const {
   std::vector<bool> legal(n_states_);
   std::transform(moves.begin(), moves.end(), parallel_states_.begin(),
-      legal.begin(), [](const HanabiMove& m, const HanabiState& s) {return s.MoveIsLegal(m);});
+      legal.begin(), [](const HanabiMove& m, const HanabiState& s) {
+        return s.MoveIsLegal(m);
+      }
+  );
   return legal;
 }

@@ -32,6 +32,8 @@
 
 namespace hanabi_learning_env {
 
+/** \brief An environment that handles multiple HanabiStates in parallel.
+ */
 class HanabiParallelEnv {
  public:
 
@@ -81,13 +83,13 @@ class HanabiParallelEnv {
   /** \overload with moves encoded as move ids.
    */
   void ApplyBatchMove(
-      const std::vector<int>& batch_move, const int agent_id);
+      const std::vector<int>& batch_move_ids, const int agent_id);
 
-  /** \brief Get observations for a specific agent.
+  /** \brief Get observations for the specified agent.
    */
   std::vector<HanabiObservation> ObserveAgent(const int agent_id);
 
-  /** \brief Get encoded observations for a specific agent.
+  /** \brief Get encoded observations for the specified agent.
    */
   HanabiEncodedBatchObservation ObserveAgentEncoded(const int agent_id);
 
@@ -116,7 +118,7 @@ class HanabiParallelEnv {
    */
   int NumStates() const {return n_states_;};
 
-  /** \brief Check for states that are terminal and create new ones instead of those.
+  /** \brief eplace specified states with new ones with agent as current player.
    *
    *  \param states           States to be reset.
    *  \param current_agent_id Id of the agent whose turn it is now.
@@ -156,6 +158,7 @@ class HanabiParallelEnv {
   std::vector<int> GetScores() const;
 
   /** \brief Check whether the supplied moves can be applied.
+   *  Number of moves must be equal to number of states.
    *
    *  \param moves moves.
    */
