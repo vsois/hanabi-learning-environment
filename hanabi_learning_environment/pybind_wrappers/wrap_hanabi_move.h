@@ -1,12 +1,23 @@
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 #include "../hanabi_lib/hanabi_move.h"
 #include "representations.h"
 
 namespace py = pybind11;
 namespace hle = hanabi_learning_env;
+using HanabiMoveVector = std::vector<hle::HanabiMove>;
+PYBIND11_MAKE_OPAQUE(HanabiMoveVector)
 
 void wrap_hanabi_move(py::module& m) {
+  py::class_<HanabiMoveVector>(m, "HanabiMoveVector")
+    .def(py::init())
+    .def("append", [](HanabiMoveVector& v, const hle::HanabiMove& m) { v.push_back(m); })
+    .def("__len__", [](const HanabiMoveVector& v) { return v.size(); })
+    .def("__getitem__", [](const HanabiMoveVector& v, const int i) { return v.at(i); })
+    .def("__setitem__", [](HanabiMoveVector& v, const int i, const hle::HanabiMove& m) { v.at(i) = m; })
+    .def("__iter__", [](HanabiMoveVector& v) {
+       return py::make_iterator(v.begin(), v.end());
+    }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
   py::class_<hle::HanabiMove> hanabi_move(m, "HanabiMove");
 
   py::enum_<hle::HanabiMove::Type>(hanabi_move, "Type")

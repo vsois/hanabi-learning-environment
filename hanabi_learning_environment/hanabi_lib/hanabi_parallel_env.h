@@ -49,10 +49,10 @@ class HanabiParallelEnv {
      */
     HanabiEncodedBatchObservation(const int n_states, const int observation_len,
         const int max_moves)
-      : observation(n_states * observation_len),
+      : observation(n_states * observation_len, 0),
         legal_moves(n_states * max_moves, 0),
-        scores(n_states),
-        done(n_states),
+        scores(n_states, 0),
+        done(n_states, false),
         observation_shape({n_states, observation_len}),
         legal_moves_shape({n_states, max_moves}) {
     }
@@ -87,7 +87,7 @@ class HanabiParallelEnv {
 
   /** \brief Get observations for the specified agent.
    */
-  std::vector<HanabiObservation> ObserveAgent(const int agent_id);
+  const std::vector<HanabiObservation>& ObserveAgent(const int agent_id);
 
   /** \brief Get encoded observations for the specified agent.
    */
@@ -162,7 +162,47 @@ class HanabiParallelEnv {
    *
    *  \param moves moves.
    */
-  std::vector<bool> MovesAreLegal(std::vector<HanabiMove>& moves) const;
+  std::vector<bool> MovesAreLegal(const std::vector<HanabiMove>& moves) const;
+
+  const std::vector<HanabiObservation>& StateObservations() const {
+    return observations_;
+  }
+
+  /** \brief Get moves based on their unique ids.
+   */
+  std::vector<HanabiMove> GetMoves(const std::vector<int>& move_uids) const;
+
+  /** \brief Replace illegal moves inplace (!) and return replace status.
+   *  
+   *  \param moves Moves.
+   *  \param agent_id Agent id.
+   *
+   *  \return Boolean array where True means move was legal.
+   */
+  std::vector<bool> MakeLegal(
+      std::vector<HanabiMove>& moves, const int agent_id) const;
+
+  /** \brief Make a step (smart version of apply batch moves).
+   *  The function catches all illegal moves and marks corresponding states as terminal.
+   *  Then it precomputes the outcome of the move.
+   *
+   *  The outcomes can be then be retrieved using accessor functions.
+   *
+   *  The function's goal is to do as much as possible in one call to minimize data
+   *  traffic and squeeze most benefit from parallel execution.
+   */
+  void Step(const std::vector<HanabiMove>& moves,
+            const int agent_id,
+            const int next_agent_id);
+  void Step(const std::vector<int>& moves_uids,
+            const int agent_id,
+            const int next_agent_id);
+
+  const std::vector<std::vector<int8_t>>& EncodedStateObservations() const {
+    return encoded_observations_; }
+  const std::vector<std::vector<int8_t>>& EncodedLegalMoves() const {
+    return encoded_legal_moves_; }
+  const std::vector<bool>& IllegalMoves() const { return illegal_moves_; }
 
  private:
   /** \brief Create a new state and deal the cards.
@@ -173,9 +213,13 @@ class HanabiParallelEnv {
 
   HanabiGame game_;                                     //< Underlying instance of HanabiGame.
   std::vector<HanabiState> parallel_states_;            //< List with game states.
+  std::vector<HanabiObservation> observations_;         //< List with game state observations.
   std::vector<std::vector<int>> agent_player_mapping_;  //< List of players associated with each agent.
+  std::vector<bool> illegal_moves_;                     //< List of moves which were illegal in the last step.
   CanonicalObservationEncoder observation_encoder_;     //< Observation encoder.
   const int n_states_ = 1;                              //< Number of parallel states.
+  std::vector<std::vector<int8_t>> encoded_observations_; //< Encoded batch observation
+  std::vector<std::vector<int8_t>> encoded_legal_moves_; //< Encoded batch observation
 };
 
 }  // namespace hanabi_learning_env

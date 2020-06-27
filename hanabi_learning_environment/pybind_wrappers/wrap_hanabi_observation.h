@@ -1,12 +1,21 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <vector>
 #include "../hanabi_lib/hanabi_observation.h"
 #include "representations.h"
 
 namespace py = pybind11;
 namespace hle = hanabi_learning_env;
+using HanabiObservationVector = std::vector<hle::HanabiObservation>;
+PYBIND11_MAKE_OPAQUE(HanabiObservationVector);
 
 void wrap_hanabi_observation(py::module& m) {
+  py::class_<HanabiObservationVector>(m, "HanabiObservationVector")
+    .def("__len__", [](const HanabiObservationVector &v) { return v.size(); })
+    .def("__iter__", [](HanabiObservationVector &v) {
+       return py::make_iterator(v.begin(), v.end());
+    }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+    
   py::class_<hle::HanabiObservation>(m, "HanabiObservation")
     .def(py::init<hle::HanabiState&, const int>(),
          py::arg("state"),

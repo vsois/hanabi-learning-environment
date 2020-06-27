@@ -29,7 +29,8 @@ void wrap_hanabi_parallel_env(py::module& m) {
     .def("observe_agent",
          &hle::HanabiParallelEnv::ObserveAgent,
          py::arg("agent_id"),
-         "Get observations for the specified agent."
+         "Get observations for the specified agent.",
+         py::return_value_policy::reference
     )
     .def("observe_agent_encoded",
          &hle::HanabiParallelEnv::ObserveAgentEncoded,
@@ -98,6 +99,57 @@ void wrap_hanabi_parallel_env(py::module& m) {
          py::arg("moves"),
          "Check whether the supplied moves can be applied. "
          "Number of moves must be equal to number of states."
+    )
+    .def("get_moves", &hle::HanabiParallelEnv::GetMoves)
+    .def("make_legal",
+         &hle::HanabiParallelEnv::MakeLegal,
+         py::arg("moves"),
+         py::arg("agent_id"),
+         "Converts illegal moves to first legal inplace"
+    )
+    .def("step",
+         (void (hle::HanabiParallelEnv::*)
+              (const std::vector<hle::HanabiMove>&, const int, const int))
+            &hle::HanabiParallelEnv::Step,
+         py::arg("moves"),
+         py::arg("current_agent_id"),
+         py::arg("next_agent_id"),
+         "Make a step: catch illegal moves, apply good moves, precompute observations "
+         "for the next agent. Results can be retrieved using accessor functions."
+    )
+    .def("step",
+         (void (hle::HanabiParallelEnv::*)
+              (const std::vector<int>&, const int, const int))
+            &hle::HanabiParallelEnv::Step,
+         py::arg("move_uids"),
+         py::arg("current_agent_id"),
+         py::arg("next_agent_id"),
+         "Make a step: catch illegal moves, apply good moves, precompute observations "
+         "for the next agent. Results can be retrieved using accessor functions."
+    )
+    .def_property_readonly(
+        "state_observations",
+        &hle::HanabiParallelEnv::StateObservations,
+        py::return_value_policy::reference,
+        "Retrieve state observations as reference."
+    )
+    .def_property_readonly(
+        "illegal_moves",
+        &hle::HanabiParallelEnv::IllegalMoves,
+        py::return_value_policy::reference,
+        "Retrieve moves as reference which were illegal in the last step."
+    )
+    .def_property_readonly(
+        "encoded_observations",
+        &hle::HanabiParallelEnv::EncodedStateObservations,
+        py::return_value_policy::reference,
+        "Retrieve encoded observations as reference."
+    )
+    .def_property_readonly(
+        "encoded_legal_moves",
+        &hle::HanabiParallelEnv::EncodedLegalMoves,
+        py::return_value_policy::reference,
+        "Retrieve encoded legal moves as reference."
     )
     .def("__repr__", &hanabi_parallel_env_repr)
 
