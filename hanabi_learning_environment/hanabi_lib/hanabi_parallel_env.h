@@ -198,10 +198,14 @@ class HanabiParallelEnv {
             const int agent_id,
             const int next_agent_id);
 
-  const std::vector<std::vector<int8_t>>& EncodedStateObservations() const {
-    return encoded_observations_; }
-  const std::vector<std::vector<int8_t>>& EncodedLegalMoves() const {
-    return encoded_legal_moves_; }
+  // const std::vector<std::vector<int8_t>>& EncodedStateObservations() const {
+  //   return encoded_observations_; }
+  // const std::vector<std::vector<int8_t>>& EncodedLegalMoves() const {
+  //   return encoded_legal_moves_; }
+  const int8_t* EncodedStateObservations() const {
+    return encoded_observations_.data(); }
+  const int8_t* EncodedLegalMoves() const {
+    return encoded_legal_moves_.data(); }
   const std::vector<bool>& IllegalMoves() const { return illegal_moves_; }
 
  private:
@@ -218,8 +222,8 @@ class HanabiParallelEnv {
   std::vector<bool> illegal_moves_;                     //< List of moves which were illegal in the last step.
   CanonicalObservationEncoder observation_encoder_;     //< Observation encoder.
   const int n_states_ = 1;                              //< Number of parallel states.
-  std::vector<std::vector<int8_t>> encoded_observations_; //< Encoded batch observation
-  std::vector<std::vector<int8_t>> encoded_legal_moves_; //< Encoded batch observation
+  std::vector<int8_t> encoded_observations_;            //< Flattened encoded batch observation
+  std::vector<int8_t> encoded_legal_moves_;             //< Flattened encoded legal moves
 };
 
 }  // namespace hanabi_learning_env

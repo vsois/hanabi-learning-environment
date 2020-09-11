@@ -58,8 +58,8 @@ hanabi_learning_env::HanabiParallelEnv::HanabiParallelEnv(
   : game_(HanabiGame(game_params)),
     observation_encoder_(&game_),
     n_states_(n_states),
-    encoded_observations_(n_states, std::vector<int8_t>(GetObservationFlatLength(), 0)),
-    encoded_legal_moves_(n_states, std::vector<int8_t>(game_.MaxMoves(), 0)),
+    encoded_observations_(n_states * GetObservationFlatLength(), 0),
+    encoded_legal_moves_(n_states * game_.MaxMoves(), 0),
     illegal_moves_(n_states, false)
 {
   Reset();
@@ -214,12 +214,12 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id) {
     const auto& observation = HanabiObservation(state, player_idx);
     observations_[state_idx] = observation;
     // encode
-    EncodeObservation<decltype(encoded_observations_)::value_type::value_type>(
+    EncodeObservation<decltype(encoded_observations_)::value_type>(
         observation_encoder_,
         observation,
-        encoded_observations_[state_idx].begin(),
+        encoded_observations_.begin() + state_idx * GetObservationFlatLength(),
         state.LegalMoves(player_idx),
-        encoded_legal_moves_[state_idx].begin(),
+        encoded_legal_moves_.begin() + state_idx * game_.MaxMoves(),
         game_
     );
   }
@@ -374,7 +374,7 @@ void hanabi_learning_env::HanabiParallelEnv::Step(
   std::copy(moves_orig.begin(), moves_orig.end(), std::back_inserter(moves));
   const auto& player_ids = agent_player_mapping_[agent_id];
   const auto& next_player_ids = agent_player_mapping_[next_agent_id];
-  // #pragma omp parallel for
+  #pragma omp parallel for
   for (size_t state_idx = 0; state_idx < n_states_; ++state_idx) {
     // make moves legal
     const auto pid = player_ids[state_idx];
@@ -399,12 +399,12 @@ void hanabi_learning_env::HanabiParallelEnv::Step(
 
     // encode
     // std::cout << "encode" << std::endl;
-    EncodeObservation<decltype(encoded_observations_)::value_type::value_type>(
+    EncodeObservation<decltype(encoded_observations_)::value_type>(
         observation_encoder_,
         observation,
-        encoded_observations_[state_idx].begin(),
+        encoded_observations_.begin() + state_idx * GetObservationFlatLength(),
         state.LegalMoves(next_pid),
-        encoded_legal_moves_[state_idx].begin(),
+        encoded_legal_moves_.begin() + state_idx * game_.MaxMoves(),
         game_
     );
   }

@@ -1,13 +1,36 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 #include "../hanabi_lib/hanabi_parallel_env.h"
 #include "representations.h"
 
 namespace py = pybind11;
 namespace hle = hanabi_learning_env;
+using Int8Vector = std::vector<int8_t>;
+PYBIND11_MAKE_OPAQUE(Int8Vector)
 
 void wrap_hanabi_parallel_env(py::module& m) {
-  py::class_<hle::HanabiParallelEnv>(m, "HanabiParallelEnv")
+
+  // class EncodedBuffer {
+  //   public:
+  //     EncodedBuffer(const int8_t* data_ptr, size_t rows, size_t cols) : rows_(rows), cols_(cols), data_ptr_(data_ptr) {}
+  //     const int8_t* data_ptr_;
+  //     const size_t rows_;
+  //     const size_t cols_;
+  // };
+  // py::class_<EncodedBuffer>(m, "EncodedBuffer", py::buffer_protocol())
+  //   // .def("shape", [](const EncodedBuffer& buf) -> std::vector<size_t> {return {buf.rows_, buf.cols_};})
+  //   .def_buffer([](const EncodedBuffer &buf) -> py::buffer_info {
+  //           return py::buffer_info(
+  //               buf.data_ptr_,                               [> Pointer to buffer <]
+  //               {buf.rows_, buf.cols_},                 [> Buffer dimensions <]
+  //               {sizeof(int8_t) * size_t(buf.cols_),     [> Strides (in bytes) for each index <]
+  //                sizeof(int8_t)}
+  //           );
+  //   }
+  // );
+
+  py::class_<hle::HanabiParallelEnv>(m, "HanabiParallelEnv", py::buffer_protocol())
     .def(py::init<const std::unordered_map<std::string, std::string>&,
                   const int>(),
          py::arg("game_parameters"),
@@ -141,14 +164,16 @@ void wrap_hanabi_parallel_env(py::module& m) {
     )
     .def_property_readonly(
         "encoded_observations",
-        &hle::HanabiParallelEnv::EncodedStateObservations,
-        py::return_value_policy::reference,
+        [](const hle::HanabiParallelEnv& e) {
+          return py::array({e.NumStates(), e.GetObservationFlatLength()}, e.EncodedStateObservations());
+        },
         "Retrieve encoded observations as reference."
     )
     .def_property_readonly(
         "encoded_legal_moves",
-        &hle::HanabiParallelEnv::EncodedLegalMoves,
-        py::return_value_policy::reference,
+        [](const hle::HanabiParallelEnv& e) {
+          return py::array({e.NumStates(), e.ParentGame().MaxMoves()}, e.EncodedLegalMoves());
+        },
         "Retrieve encoded legal moves as reference."
     )
     .def("__repr__", &hanabi_parallel_env_repr)
