@@ -67,6 +67,16 @@ void wrap_hanabi_observation(py::module& m) {
             &hle::HanabiObservation::CardPlayableOnFireworks,
          "Can the card be played on fireworks pile?"
     )
+	.def("playable_percent",
+		&hle::HanabiObservation::PlayablePercent,
+		"Probability of card being playable on fireworks"
+	)
+	.def("hand_possible",
+		(bool (hle::HanabiObservation::*) (const std::vector<hle::HanabiCard>&))
+		&hle::HanabiObservation::HandPossible,
+		py::arg("cards"),
+		"Probability of card being playable on fireworks"
+	)
     .def("__str__", &hle::HanabiObservation::ToString)
     .def("__repr__", &hanabi_observation_repr)
     .doc() = "Agent observation of a HanabiState.";
