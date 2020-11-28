@@ -11,6 +11,24 @@ void wrap_hanabi_game(py::module& m) {
     .def(py::init<const std::unordered_map<std::string, std::string>&>(),
          py::arg("params")
     )
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiGame &game) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(game.Parameters());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 1)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+  	  	  		  hle::HanabiGame game(t[0].cast<std::unordered_map<std::string, std::string>>());
+
+  	  	  		  return game;
+  	  	  	  }
+		)
+	)
     .def_property_readonly("max_moves", &hle::HanabiGame::MaxMoves)
     .def("get_move",
          &hle::HanabiGame::GetMove,

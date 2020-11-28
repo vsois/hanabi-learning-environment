@@ -64,7 +64,9 @@ HanabiObservation::HanabiObservation(const HanabiState& state,
       information_tokens_(state.InformationTokens()),
       life_tokens_(state.LifeTokens()),
       legal_moves_(state.LegalMoves(observing_player)),
-      parent_game_(state.ParentGame()) {
+      parent_game_(state.ParentGame()),
+	  parent_state_(&state),
+	  observing_player_(observing_player){
   REQUIRE(observing_player >= 0 &&
           observing_player < state.ParentGame()->NumPlayers());
   hands_.reserve(state.Hands().size());
