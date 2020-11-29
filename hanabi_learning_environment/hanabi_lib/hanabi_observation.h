@@ -66,7 +66,6 @@ class HanabiObservation {
   std::vector<double> PlayablePercent() const;
   bool HandPossible(std::vector<HanabiCard>& hand) const;
 
-
   // getter for pickle
   const HanabiState* ParentState() const { return parent_state_; }
   int ObservingPlayer() const { return observing_player_; }
