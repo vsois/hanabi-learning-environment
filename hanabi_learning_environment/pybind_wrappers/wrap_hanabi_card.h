@@ -7,8 +7,32 @@ namespace py = pybind11;
 namespace hle = hanabi_learning_env;
 
 void wrap_hanabi_card(py::module& m) {
-  py::class_<hle::HanabiCard> hanabi_card(m, "HanabiCard");
-  hanabi_card
+	py::class_<hle::HanabiCard> hanabi_card(m, "HanabiCard");
+	hanabi_card
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiCard &card) {
+				// Return a tuple that fully encodes the state of the object
+				hle::HanabiCard::ColorType color = static_cast<hle::HanabiCard::ColorType>(card.Color());
+				hle::HanabiCard::RankType rank = static_cast<hle::HanabiCard::RankType>(card.Rank());
+				return py::make_tuple(color, rank);
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 2)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+
+  	  	  		  hle::HanabiCard card(t[0].cast<hle::HanabiCard::ColorType>(),
+  	  	  				  t[1].cast<hle::HanabiCard::RankType>());
+
+  	  	  		  return card;
+  	  	  	  }
+		)
+	)
+
+
     .def(py::init<hle::HanabiCard::ColorType,
                   hle::HanabiCard::RankType>(),
          py::arg("color"),
@@ -49,3 +73,4 @@ void wrap_hanabi_card(py::module& m) {
     )
     .export_values();
 }
+

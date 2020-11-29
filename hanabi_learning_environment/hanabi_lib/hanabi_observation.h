@@ -62,9 +62,17 @@ class HanabiObservation {
   bool CardPlayableOnFireworks(HanabiCard card) const {
     return CardPlayableOnFireworks(card.Color(), card.Rank());
   }
+  // returns for each card in hand probability of card being playable on fireworks
+  std::vector<double> PlayablePercent() const;
+  bool HandPossible(std::vector<HanabiCard>& hand) const;
+
+  // getter for pickle
+  const HanabiState* ParentState() const { return parent_state_; }
+  int ObservingPlayer() const { return observing_player_; }
 
  private:
   int cur_player_offset_;  // offset of current_player from observing_player
+  int observing_player_;
   std::vector<HanabiHand> hands_;         // observing player is element 0
   std::vector<HanabiCard> discard_pile_;  // back is most recent discard
   std::vector<int> fireworks_;
@@ -74,6 +82,8 @@ class HanabiObservation {
   int life_tokens_;
   std::vector<HanabiMove> legal_moves_;  // list of legal moves
   const HanabiGame* parent_game_ = nullptr;
+  const HanabiState* parent_state_;
+  const std::vector<int> GetDefaultCardCounter() const;
 };
 
 }  // namespace hanabi_learning_env

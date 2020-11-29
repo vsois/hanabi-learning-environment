@@ -15,6 +15,7 @@
 #include "hanabi_observation.h"
 
 #include <algorithm>
+#include <numeric>
 #include <cassert>
 
 #include "util.h"
@@ -47,6 +48,10 @@ void ChangeHistoryItemToObserverRelative(int observer_pid, int num_players,
     item->player = (item->player - observer_pid + num_players) % num_players;
   }
 }
+
+//
+
+
 }  // namespace
 
 HanabiObservation::HanabiObservation(const HanabiState& state,
@@ -59,7 +64,9 @@ HanabiObservation::HanabiObservation(const HanabiState& state,
       information_tokens_(state.InformationTokens()),
       life_tokens_(state.LifeTokens()),
       legal_moves_(state.LegalMoves(observing_player)),
-      parent_game_(state.ParentGame()) {
+      parent_game_(state.ParentGame()),
+	  parent_state_(&state),
+	  observing_player_(observing_player){
   REQUIRE(observing_player >= 0 &&
           observing_player < state.ParentGame()->NumPlayers());
   hands_.reserve(state.Hands().size());
@@ -124,6 +131,121 @@ bool HanabiObservation::CardPlayableOnFireworks(int color, int rank) const {
     return false;
   }
   return rank == fireworks_[color];
+}
+
+const std::vector<int> HanabiObservation::GetDefaultCardCounter() const {
+
+	int num_ranks = ParentGame()->NumRanks();
+	int num_colors = ParentGame()->NumColors();
+	int num_players = ParentGame()->NumPlayers();
+	int offset = 0;
+
+	std::vector<int> output_vector(num_ranks*num_colors);
+
+	for (int i_color = 0; i_color < num_colors; i_color++) {
+
+		for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
+			// initial value
+			int index = i_color * num_ranks + i_rank;
+			output_vector[index] = ParentGame()->NumberCardInstances(i_color, i_rank);
+			// fireworks
+			if(i_rank < Fireworks()[i_color])
+				output_vector[index]--;
+		}
+	}
+
+	// discard pile
+	for (const HanabiCard& card : DiscardPile())
+		output_vector[card.Color() * num_ranks + card.Rank()]--;
+
+	// other players
+	for (int i_player = 1; i_player < num_players; i_player++) {
+		for (const HanabiCard& card : Hands()[i_player].Cards())
+			output_vector[card.Color() * num_ranks + card.Rank()]--;
+	}
+
+	return output_vector;
+
+}
+
+std::vector<double> HanabiObservation::PlayablePercent() const {
+
+	// get the card knowledge of the active player
+	const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[0].Knowledge();
+
+	// create the result vector with placeholder for each card in hand
+	std::vector<double> playable(knowledge.size(), 0.0);
+
+	// get default card values
+	std::vector<int> default_card_counter = GetDefaultCardCounter();
+
+	int num_ranks = ParentGame()->NumRanks();
+	int num_colors = ParentGame()->NumColors();
+	int num_players = ParentGame()->NumPlayers();
+
+	// loop through own card knowledge
+	int counter = 0;
+
+	for (const HanabiHand::CardKnowledge& card_knowledge : knowledge) {
+
+		// copy default card values
+		std::vector<int> this_card_counter = default_card_counter;
+		int num_playable = 0;
+
+		for( int i_color = 0; i_color < num_colors; i_color++) {
+
+			for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
+
+				int index = i_color * num_ranks + i_rank;
+
+				// card hints
+				if(!card_knowledge.ColorPlausible(i_color) ||
+						!card_knowledge.RankPlausible(i_rank))
+					this_card_counter[index] = 0;
+
+				// playable counter
+				if (CardPlayableOnFireworks(i_color, i_rank))
+					num_playable += this_card_counter[index];
+			}
+		}
+
+		// count possible cards
+		int num_total = std::accumulate(this_card_counter.begin(),
+				this_card_counter.end(), 0);
+
+		// calculate percentage
+		playable[counter] = (float) num_playable / num_total;
+		counter += 1;
+
+	}
+
+	return playable;
+}
+
+bool HanabiObservation::HandPossible(std::vector<HanabiCard>& hand) const {
+
+	// get the card knowledge of the active player
+	const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[0].Knowledge();
+
+	// make sure that input vector of same length as hand size
+	assert(knowledge.size() == hand.size());
+
+	// get default card values
+	std::vector<int> default_card_counter = GetDefaultCardCounter();
+
+	// make sure that card fits card knowledge
+	for (int i = 0; i < knowledge.size(); i++) {
+
+		HanabiHand::CardKnowledge card_knowledge = knowledge[i];
+		HanabiCard card = hand[i];
+
+		if(!card_knowledge.ColorPlausible(card.Color()) ||
+				!card_knowledge.RankPlausible(card.Rank())) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 }  // namespace hanabi_learning_env

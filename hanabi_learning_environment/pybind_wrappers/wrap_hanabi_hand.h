@@ -9,13 +9,37 @@ namespace hle = hanabi_learning_env;
 
 void wrap_hanabi_hand(py::module& m) {
   py::class_<hle::HanabiHand> (m, "HanabiHand")
-    .def(py::init())
     .def(py::init<const hle::HanabiHand&>(), py::arg("hand"))
     .def(py::init<const hle::HanabiHand&, bool, bool>(),
          py::arg("hand"),
          py::arg("hide_cards"),
          py::arg("hide_knowledge")
     )
+    .def(py::init<const std::vector<hle::HanabiCard>&,
+    		const std::vector<hle::HanabiHand::CardKnowledge>&>(),
+         py::arg("cards"),
+         py::arg("knowledge")
+    )
+    .def(py::init())
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiHand &hand) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(hand.Cards(), hand.Knowledge()); // hand.Cards(), hand.Knowledge()
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 2)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+  	  	  		  hle::HanabiHand hand(t[0].cast<std::vector<hle::HanabiCard>>(),
+  	  	  				  t[1].cast<std::vector<hle::HanabiHand::CardKnowledge>>());
+
+  	  	  		  return hand;
+  	  	  	  }
+		)
+	)
     .def_property_readonly(
         "cards",
         &hle::HanabiHand::Cards,
@@ -57,6 +81,24 @@ void wrap_hanabi_hand(py::module& m) {
 
   py::class_<hle::HanabiHand::ValueKnowledge> (m, "ValueKnowledge")
     .def(py::init<int>())
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiHand::ValueKnowledge &knowledge) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(knowledge.Range());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 1)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+  	  	  		  hle::HanabiHand::ValueKnowledge knowledge(t[0].cast<int>());
+
+  	  	  		  return knowledge;
+  	  	  	  }
+		)
+	)
     .def_property_readonly(
         "range",
         &hle::HanabiHand::ValueKnowledge::Range,
@@ -100,6 +142,25 @@ void wrap_hanabi_hand(py::module& m) {
 
   py::class_<hle::HanabiHand::CardKnowledge> (m, "CardKnowledge")
     .def(py::init<int, int>())
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiHand::CardKnowledge &knowledge) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(knowledge.NumColors(), knowledge.NumRanks());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 2)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+  	  	  		  hle::HanabiHand::CardKnowledge knowledge(t[0].cast<int>(),
+  	  	  				  t[1].cast<int>());
+
+  	  	  		  return knowledge;
+  	  	  	  }
+		)
+	)
     .def_property_readonly(
         "num_colors",
         &hle::HanabiHand::CardKnowledge::NumColors,
