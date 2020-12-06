@@ -26,7 +26,10 @@
 #include "hanabi_game.h"
 #include "hanabi_state.h"
 #include "hanabi_observation.h"
+#include "observation_encoder.h"
 #include "canonical_encoders.h"
+#include "common_encoders.h"
+#include "encoder_factory.h"
 
 #include <iostream>
 
@@ -104,7 +107,7 @@ class HanabiParallelEnv {
 
   /** \brief Get shape of a single encoded observation.
    */
-  std::vector<int> EncodedObservationShape() const {return observation_encoder_.Shape();};
+  std::vector<int> EncodedObservationShape() const {return observation_encoder_->Shape();};
 
   /** \brief Get a const reference to the parallel states.
    */
@@ -220,7 +223,7 @@ class HanabiParallelEnv {
   std::vector<HanabiObservation> observations_;         //< List with game state observations.
   std::vector<std::vector<int>> agent_player_mapping_;  //< List of players associated with each agent.
   std::vector<bool> illegal_moves_;                     //< List of moves which were illegal in the last step.
-  CanonicalObservationEncoder observation_encoder_;     //< Observation encoder.
+  ObservationEncoder* observation_encoder_;              //< Observation encoder.
   const int n_states_ = 1;                              //< Number of parallel states.
   std::vector<int8_t> encoded_observations_;            //< Flattened encoded batch observation
   std::vector<int8_t> encoded_legal_moves_;             //< Flattened encoded legal moves

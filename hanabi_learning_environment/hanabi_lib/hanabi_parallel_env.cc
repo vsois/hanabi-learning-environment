@@ -29,14 +29,14 @@
 
 template<typename EncodingPrecision>
 inline void EncodeObservation(
-    hanabi_learning_env::ObservationEncoder& encoder,
+    hanabi_learning_env::ObservationEncoder* encoder,
     const hanabi_learning_env::HanabiObservation& observation,
     typename std::vector<EncodingPrecision>::iterator enc_observation_begin,
     const std::vector<hanabi_learning_env::HanabiMove>& legal_moves,
     typename std::vector<EncodingPrecision>::iterator enc_legal_moves_begin,
     const hanabi_learning_env::HanabiGame& game
     ) {
-  const auto encoded_observation = encoder.Encode(observation);
+  const auto encoded_observation = encoder->Encode(observation);
   // auto vec_observ_iter = observation.observation.begin() +
   //     state_idx * encoded_observation.size();
   std::copy(encoded_observation.begin(), encoded_observation.end(),
@@ -56,7 +56,9 @@ hanabi_learning_env::HanabiParallelEnv::HanabiParallelEnv(
     std::string>& game_params,
     const int n_states)
   : game_(HanabiGame(game_params)),
-    observation_encoder_(&game_),
+    observation_encoder_(ObservationEncoderFactory::Create(
+    		ObservationEncoder::Type::kCommon,
+    		&game_)),
     n_states_(n_states),
     encoded_observations_(n_states * GetObservationFlatLength(), 0),
     encoded_legal_moves_(n_states * game_.MaxMoves(), 0),
@@ -174,7 +176,7 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgentEncoded(const int agent_id) 
     const int player_idx = player_ids[state_idx];
     const auto& state = parallel_states_[state_idx];
     const HanabiObservation observation(state, player_idx);
-    const auto encoded_observation = observation_encoder_.Encode(observation);
+    const auto encoded_observation = observation_encoder_->Encode(observation);
     auto vec_observ_iter = batch_observation.observation.begin() +
         state_idx * encoded_observation.size();
     vec_observ_iter = std::copy(encoded_observation.begin(),
@@ -234,7 +236,7 @@ hanabi_learning_env::HanabiParallelEnv::EncodeObservations(
   std::vector<std::vector<int8_t>> encoded_observations(n_states_);
   #pragma omp parallel for
   for (size_t state_idx = 0; state_idx < parallel_states_.size(); ++state_idx) {
-    const auto eobs = observation_encoder_.Encode(observations[state_idx]);
+    const auto eobs = observation_encoder_->Encode(observations[state_idx]);
     // encoded_observations[state_idx] = std::move(eobs);
     std::move(eobs.begin(), eobs.end(), std::back_inserter(encoded_observations[state_idx]));
   }

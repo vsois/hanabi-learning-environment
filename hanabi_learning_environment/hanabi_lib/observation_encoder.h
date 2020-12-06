@@ -21,12 +21,15 @@
 #include <vector>
 
 #include "hanabi_observation.h"
+//#include "canonical_encoders.h"
+//#include "common_encoders.h"
+
 
 namespace hanabi_learning_env {
 
 class ObservationEncoder {
  public:
-  enum Type { kCanonical = 0, kCommon = 1 };
+  enum Type {kCanonical = 0, kCommon = 1 };
   virtual ~ObservationEncoder() = default;
 
   // Returns the shape (dimension sizes of the tensor).
@@ -38,6 +41,7 @@ class ObservationEncoder {
 
   // Return the type of this encoder.
   virtual Type type() const = 0;
+
 };
 
 }  // namespace hanabi_learning_env
