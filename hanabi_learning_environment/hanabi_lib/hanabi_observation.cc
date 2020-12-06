@@ -247,5 +247,10 @@ bool HanabiObservation::HandPossible(std::vector<HanabiCard>& hand) const {
 
 	return true;
 }
-
+const HanabiCard HanabiObservation::GetCardToDiscard(int index) const {
+	const std::vector<HanabiHand> state_hands = parent_state_->Hands();
+	const std::vector<HanabiCard> cards = state_hands[observing_player_].Cards();
+	assert(index < cards.size());
+	return cards[index];
+}
 }  // namespace hanabi_learning_env

@@ -97,6 +97,12 @@ void wrap_hanabi_observation(py::module& m) {
 		py::arg("cards"),
 		"Probability of card being playable on fireworks"
 	)
+    .def("card_to_discard",
+		(hle::HanabiCard (hle::HanabiObservation::*) (int) const)
+		&hle::HanabiObservation::GetCardToDiscard,
+		py::arg("index"),
+		"get card to discard by index"
+	)
     .def("__str__", &hle::HanabiObservation::ToString)
     .def("__repr__", &hanabi_observation_repr)
     .doc() = "Agent observation of a HanabiState.";

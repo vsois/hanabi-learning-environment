@@ -69,7 +69,8 @@ class HanabiObservation {
   // getter for pickle
   const HanabiState* ParentState() const { return parent_state_; }
   int ObservingPlayer() const { return observing_player_; }
-
+  const HanabiCard GetCardToDiscard(int index) const;
+  
  private:
   int cur_player_offset_;  // offset of current_player from observing_player
   int observing_player_;
