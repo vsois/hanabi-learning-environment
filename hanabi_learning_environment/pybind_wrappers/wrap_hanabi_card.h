@@ -38,6 +38,10 @@ void wrap_hanabi_card(py::module& m) {
          py::arg("color"),
          py::arg("rank")
     )
+    .def(py::init<int,int>(),
+         py::arg("color"),
+         py::arg("rank")
+    )
     .def(py::init())
     .def("__eq__", &hle::HanabiCard::operator==)
     .def("is_valid",
