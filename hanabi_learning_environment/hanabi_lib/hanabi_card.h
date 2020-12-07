@@ -24,6 +24,7 @@ class HanabiCard {
   enum ColorType : int { kRed = 0, kYellow = 1, kGreen = 2, kWhite = 3, kBlue = 4, kUnknownColor = -1 };
   enum RankType : int { k1 = 0, k2 = 1, k3 = 2, k4 = 3, k5 = 4, kUnknownRank = -1 };
   HanabiCard(ColorType color, RankType rank) : color_(color), rank_(rank) {}
+  HanabiCard(int color, int rank) : color_(ColorType(color)), rank_(RankType(rank)) {}
   HanabiCard() = default;  // Create an invalid card.
   bool operator==(const HanabiCard& other_card) const;
   bool IsValid() const { return color_ >= 0 && rank_ >= 0; }
