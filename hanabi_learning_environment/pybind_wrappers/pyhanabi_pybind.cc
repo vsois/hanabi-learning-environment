@@ -9,6 +9,7 @@
 #include "wrap_hanabi_state.h"
 #include "wrap_hanabi_observation.h"
 #include "wrap_hanabi_parallel_env.h"
+#include "wrap_hanabi_encoder.h"
 
 PYBIND11_MODULE(pyhanabi_pybind, m) {
   wrap_hanabi_card(m);
@@ -19,5 +20,6 @@ PYBIND11_MODULE(pyhanabi_pybind, m) {
   wrap_hanabi_state(m);
   wrap_hanabi_observation(m);
   wrap_hanabi_parallel_env(m);
+  wrap_hanabi_encoder(m);
   m.doc() = "Python interface to C++ Hanabi library using pybind11";
 }

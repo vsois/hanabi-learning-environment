@@ -8,6 +8,8 @@
 #include "../hanabi_lib/hanabi_state.h"
 #include "../hanabi_lib/hanabi_observation.h"
 #include "../hanabi_lib/hanabi_parallel_env.h"
+#include "../hanabi_lib/canonical_encoders.h"
+#include "../hanabi_lib/observation_encoder.h"
 
 // HanabiCard
 std::string hanabi_card_repr(const hanabi_learning_env::HanabiCard& card) {
@@ -113,6 +115,13 @@ std::string hanabi_parallel_env_repr(
     const hanabi_learning_env::HanabiParallelEnv& env) {
   return "<HanabiParallelEnv("
     "n_states=" + std::to_string(env.NumStates())
+    + ")>";
+}
+
+// CanonicalObservationEncoder
+std::string canonical_encoder_repr(const hanabi_learning_env::CanonicalObservationEncoder& enc) {
+  return "<Canonical Observation Encoder("
+    "type=" + std::to_string(enc.type())
     + ")>";
 }
 
