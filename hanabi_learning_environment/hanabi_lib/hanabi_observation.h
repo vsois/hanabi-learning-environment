@@ -66,9 +66,15 @@ class HanabiObservation {
   std::vector<double> PlayablePercent() const;
   bool HandPossible(std::vector<HanabiCard>& hand) const;
 
+  // getter for pickle
+  const HanabiState* ParentState() const { return parent_state_; }
+  int ObservingPlayer() const { return observing_player_; }
 
+  const HanabiCard GetCardToDiscard(int index) const;
+  
  private:
   int cur_player_offset_;  // offset of current_player from observing_player
+  int observing_player_;
   std::vector<HanabiHand> hands_;         // observing player is element 0
   std::vector<HanabiCard> discard_pile_;  // back is most recent discard
   std::vector<int> fireworks_;
@@ -78,6 +84,7 @@ class HanabiObservation {
   int life_tokens_;
   std::vector<HanabiMove> legal_moves_;  // list of legal moves
   const HanabiGame* parent_game_ = nullptr;
+  const HanabiState* parent_state_;
   const std::vector<int> GetDefaultCardCounter() const;
 
 };

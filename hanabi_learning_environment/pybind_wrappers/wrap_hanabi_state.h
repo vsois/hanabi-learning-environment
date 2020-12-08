@@ -9,11 +9,34 @@ namespace hle = hanabi_learning_env;
 void wrap_hanabi_state(py::module& m) {
   py::class_<hle::HanabiState> hanabi_state(m, "HanabiState");
   hanabi_state
-    // .def(py::init<const hle::HanabiGame*, int>(),
-    //      py::arg("parent_game"),
-    //      py::arg("start_player") = -1
-    // )
+     .def(py::init<const hle::HanabiGame*, int>(),
+          py::arg("parent_game"),
+          py::arg("start_player") = -1
+     )
     .def(py::init<const hle::HanabiState&>(), py::arg("state"))
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiState &state) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(state.ParentGame(), state.MoveHistory());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 2)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+  	  	  		  hle::HanabiState state(t[0].cast<hle::HanabiGame*>());
+  	  	  		  std::vector<hle::HanabiHistoryItem> move_history = t[1].cast<std::vector<hle::HanabiHistoryItem>>();
+
+  	  	  		  for (const hle::HanabiHistoryItem& item : move_history) {
+  	  	  			  state.ApplyMove(item.move);
+  	  	  		  }
+
+  	  	  		  return state;
+  	  	  	  }
+		)
+	)
     .def("move_is_legal", &hle::HanabiState::MoveIsLegal, py::arg("move"))
     .def("apply_move", &hle::HanabiState::ApplyMove, py::arg("move"))
     .def("legal_moves",

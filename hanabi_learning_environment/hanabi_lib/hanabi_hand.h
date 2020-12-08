@@ -90,6 +90,10 @@ class HanabiHand {
   };
 
   HanabiHand() {}
+  HanabiHand(const std::vector<HanabiCard>& cards,
+		  const std::vector<HanabiHand::CardKnowledge>& knowledge):
+	  cards_(cards),
+	  card_knowledge_(knowledge){}
   HanabiHand(const HanabiHand& hand)
       : cards_(hand.cards_), card_knowledge_(hand.card_knowledge_) {}
   // Copy hand. Hide cards (set to invalid) if hide_cards is true.

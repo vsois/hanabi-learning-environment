@@ -21,6 +21,26 @@ void wrap_hanabi_observation(py::module& m) {
          py::arg("state"),
          py::arg("observing_player")
     )
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiObservation &obs) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(obs.ParentState(), obs.ObservingPlayer());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 2)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+
+  	  	  		  hle::HanabiObservation obs(t[0].cast<hle::HanabiState>(),
+  	  	  				  t[1].cast<int>());
+
+  	  	  		  return obs;
+  	  	  	  }
+		)
+	)
     .def_property_readonly(
         "current_player_offset",
         &hle::HanabiObservation::CurPlayerOffset,
@@ -76,6 +96,12 @@ void wrap_hanabi_observation(py::module& m) {
 		&hle::HanabiObservation::HandPossible,
 		py::arg("cards"),
 		"Probability of card being playable on fireworks"
+	)
+    .def("card_to_discard",
+		(hle::HanabiCard (hle::HanabiObservation::*) (int) const)
+		&hle::HanabiObservation::GetCardToDiscard,
+		py::arg("index"),
+		"get card to discard by index"
 	)
     .def("__str__", &hle::HanabiObservation::ToString)
     .def("__repr__", &hanabi_observation_repr)

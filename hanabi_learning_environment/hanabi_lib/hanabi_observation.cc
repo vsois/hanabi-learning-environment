@@ -64,7 +64,9 @@ HanabiObservation::HanabiObservation(const HanabiState& state,
       information_tokens_(state.InformationTokens()),
       life_tokens_(state.LifeTokens()),
       legal_moves_(state.LegalMoves(observing_player)),
-      parent_game_(state.ParentGame()) {
+      parent_game_(state.ParentGame()),
+	  parent_state_(&state),
+	  observing_player_(observing_player){
   REQUIRE(observing_player >= 0 &&
           observing_player < state.ParentGame()->NumPlayers());
   hands_.reserve(state.Hands().size());
@@ -244,6 +246,13 @@ bool HanabiObservation::HandPossible(std::vector<HanabiCard>& hand) const {
 	}
 
 	return true;
+}
+
+const HanabiCard HanabiObservation::GetCardToDiscard(int index) const {
+	const std::vector<HanabiHand> state_hands = parent_state_->Hands();
+	const std::vector<HanabiCard> cards = state_hands[observing_player_].Cards();
+	assert(index < cards.size());
+	return cards[index];
 }
 
 }  // namespace hanabi_learning_env

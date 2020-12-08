@@ -54,6 +54,30 @@ void wrap_hanabi_move(py::module& m) {
          py::arg("target_offset") = -1,
          py::arg("card") = hle::HanabiCard()
     )
+	.def(py::pickle(
+			// __getstate__
+			[](const hle::HanabiMove &move) {
+				// Return a tuple that fully encodes the state of the object
+				return py::make_tuple(move.MoveType(), move.CardIndex(),
+						move.TargetOffset(), move.Color(), move.Rank());
+  	  	  	  },
+			  // __setstate__
+			  [](py::tuple t) {
+  	  	  		  if (t.size() != 5)
+  	  	  			  throw std::runtime_error("Invalid state!");
+
+  	  	  		  // Create a new C++ instance
+
+  	  	  		  hle::HanabiMove move(t[0].cast<hle::HanabiMove::Type>(),
+  	  	  				  t[1].cast<int8_t>(),
+						  t[2].cast<int8_t>(),
+						  t[3].cast<int8_t>(),
+						  t[4].cast<int8_t>());
+
+  	  	  		  return move;
+  	  	  	  }
+		)
+	)
     .def("__eq__",
          &hle::HanabiMove::operator==,
          "Tests whether two moves are functionally equivalent.")
