@@ -16,6 +16,7 @@
 #define __HANABI_CARD_H__
 
 #include <string>
+#include <unordered_map>
 
 namespace hanabi_learning_env {
 
@@ -31,10 +32,12 @@ class HanabiCard {
   std::string ToString() const;
   int Color() const { return color_; }
   int Rank() const { return rank_; }
+  size_t Hash() const {return hasher_(ToString());}
 
  private:
   ColorType color_ = ColorType::kUnknownColor;  // 0 indexed card color.
   RankType rank_ = RankType::kUnknownRank;   // 0 indexed card rank.
+  std::hash<std::string> hasher_;
 };
 
 }  // namespace hanabi_learning_env

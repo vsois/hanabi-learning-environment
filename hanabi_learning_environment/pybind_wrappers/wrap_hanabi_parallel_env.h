@@ -53,7 +53,7 @@ void wrap_hanabi_parallel_env(py::module& m) {
          &hle::HanabiParallelEnv::ObserveAgent,
          py::arg("agent_id"),
          "Get observations for the specified agent.",
-         py::return_value_policy::reference
+         py::return_value_policy::copy
     )
     .def("observe_agent_encoded",
          &hle::HanabiParallelEnv::ObserveAgentEncoded,
@@ -153,7 +153,7 @@ void wrap_hanabi_parallel_env(py::module& m) {
     .def_property_readonly(
         "state_observations",
         &hle::HanabiParallelEnv::StateObservations,
-        py::return_value_policy::reference,
+        py::return_value_policy::copy,
         "Retrieve state observations as reference."
     )
     .def_property_readonly(
