@@ -686,7 +686,7 @@ int ParallelNumStates(const pyhanabi_parallel_env_t* parallel_env) {
 int ParallelObservationLength(const pyhanabi_parallel_env_t* parallel_env) {
   auto obs_shape =
       reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
-          parallel_env->parallel_env)->EncodedObservationShape();
+          parallel_env->parallel_env)->GetEncodedObservationShape();
   return std::accumulate(obs_shape.begin(), obs_shape.end(), 1,
             std::multiplies<int>());
 }
@@ -714,7 +714,7 @@ void ParallelResetStates(pyhanabi_parallel_env_t* parallel_env,
   std::vector<int> vec_states;
   vec_states.assign(states, states + states_len);
   reinterpret_cast<hanabi_learning_env::HanabiParallelEnv*>(
-      parallel_env->parallel_env)->ResetStates(vec_states, current_agent_id);
+      parallel_env->parallel_env)->ResetState(vec_states, current_agent_id);
 }
 
 void ParallelObserveAgent(pyhanabi_batch_observation_t* batch_observation,
@@ -740,7 +740,7 @@ void NewBatchObservation(pyhanabi_batch_observation_t* batch_observation,
       reinterpret_cast<const hanabi_learning_env::HanabiParallelEnv*>(
           parallel_env->parallel_env);
   const int n_states = hanabi_parallel_env->NumStates();
-  const auto obs_shape = hanabi_parallel_env->EncodedObservationShape();
+  const auto obs_shape = hanabi_parallel_env->GetEncodedObservationShape();
   const int obs_len = std::accumulate(obs_shape.begin(), obs_shape.end(), 1,
       std::multiplies<int>());
   const int max_moves = hanabi_parallel_env->ParentGame().MaxMoves();
