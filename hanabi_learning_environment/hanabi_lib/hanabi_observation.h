@@ -64,6 +64,8 @@ class HanabiObservation {
   }
   // returns for each card in hand probability of card being playable on fireworks
   std::vector<double> PlayablePercent() const;
+  double AveragePlayability() const;
+  std::vector<double> CommonPlayability() const;
   bool HandPossible(std::vector<HanabiCard>& hand) const;
 
   // getter for pickle
@@ -86,6 +88,7 @@ class HanabiObservation {
   const HanabiGame* parent_game_ = nullptr;
   const HanabiState* parent_state_;
   const std::vector<int> GetDefaultCardCounter() const;
+  const std::vector<int> GetCommonCardCounter() const;
 
 };
 
