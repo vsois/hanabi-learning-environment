@@ -146,6 +146,27 @@ void wrap_hanabi_parallel_env(py::module& m) {
 			},
 			"Convert observations to one-hot encoded representation."
 		)
+	    .def("encode",
+			[](hle::HanabiParallelEnv& e, py::list lobj)
+			{
+				std::vector<hle::HanabiObservation> obs_vec;
+				for (py::handle obj : lobj) {
+					hle::HanabiObservation obs = obj.cast<hle::HanabiObservation>();
+					obs_vec.push_back(obs);
+				}
+				e.EncodeLegalMoves(obs_vec);
+				e.EncodeObservation(obs_vec);
+				int size = static_cast<int>(obs_vec.size());
+
+				return py::make_tuple(
+						py::array({size, e.GetEncodedObservationFlatLength()},
+								e.EncodedStateObservations()),
+						py::array({size, e.ParentGame().MaxMoves()},
+								e.EncodedLegalMoves())
+				);
+			},
+			"Convert observations to one-hot encoded representation."
+	    )
 		.def("get_move",
 			&hle::HanabiParallelEnv::GetMove
 		)
