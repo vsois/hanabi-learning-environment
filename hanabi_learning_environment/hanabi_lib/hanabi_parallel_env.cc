@@ -26,6 +26,16 @@ hanabi_learning_env::HanabiState hanabi_learning_env::HanabiParallelEnv::NewStat
 	return state;
 }
 
+template<typename T>
+std::vector<T> slice(std::vector<T> const &v, int m, int n)
+{
+    auto first = v.cbegin() + m;
+    auto last = v.cbegin() + n;
+
+    std::vector<T> vec(first, last);
+    return vec;
+}
+
 /*
  *
  */
@@ -265,6 +275,25 @@ hanabi_learning_env::HanabiParallelEnv::ObserveAgent(int agent_id, int idx) {
 	observations_[idx] = observation;
 
 	return observations_.at(idx);
+}
+
+const std::vector<hanabi_learning_env::HanabiObservation>
+hanabi_learning_env::HanabiParallelEnv::ObserveAgent(const int agent_id,
+		std::vector<int> idx) {
+
+	// get internal player id
+	const auto& player_ids = agent_player_mapping_[agent_id];
+
+	//#pragma omp parallel for
+	for (size_t i = 0; i < idx.size(); i++) {
+		const int state_idx = idx[i];
+		const int player_idx = player_ids[state_idx];
+		const auto& state = parallel_states_[state_idx];
+		const auto& observation = HanabiObservation(state, player_idx);
+		observations_[i] = observation;
+	}
+
+	return slice(observations_, 0, idx.size());
 }
 
 /*

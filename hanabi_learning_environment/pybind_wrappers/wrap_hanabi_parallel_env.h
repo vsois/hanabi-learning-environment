@@ -76,6 +76,15 @@ void wrap_hanabi_parallel_env(py::module& m) {
 			 "Get observations for the specified agent.",
 			 py::return_value_policy::copy
 	    )
+	    .def("observe_agent",
+			 (const std::vector<hle::HanabiObservation> (hle::HanabiParallelEnv::*)
+				(int, std::vector<int>))
+				&hle::HanabiParallelEnv::ObserveAgent,
+			 py::arg("agent_id"),
+			 py::arg("index vector"),
+			 "Get observations for the specified agent."//,
+			 //py::return_value_policy::copy
+	    )
 		.def("get_score",
 			&hle::HanabiParallelEnv::GetScore
 		)
@@ -83,8 +92,9 @@ void wrap_hanabi_parallel_env(py::module& m) {
 			[](hle::HanabiParallelEnv& e, const std::vector<hle::HanabiObservation>& obs)
 			{
 				e.EncodeObservation(obs);
+				int size = static_cast<int>(obs.size());
 				return py::array(
-						{e.NumStates(), e.GetEncodedObservationFlatLength()},
+						{size, e.GetEncodedObservationFlatLength()},
 						e.EncodedStateObservations());
 			},
 			"Convert observations to one-hot encoded representation."
@@ -109,8 +119,9 @@ void wrap_hanabi_parallel_env(py::module& m) {
 			[](hle::HanabiParallelEnv& e, const std::vector<hle::HanabiObservation>& obs)
 			{
 				e.EncodeLegalMoves(obs);
+				int size = static_cast<int>(obs.size());
 				return py::array(
-						{e.NumStates(), e.ParentGame().MaxMoves()},
+						{size, e.ParentGame().MaxMoves()},
 						e.EncodedLegalMoves());
 			},
 			"Convert observations to one-hot encoded representation."
@@ -136,11 +147,12 @@ void wrap_hanabi_parallel_env(py::module& m) {
 			{
 				e.EncodeLegalMoves(obs);
 				e.EncodeObservation(obs);
+				int size = static_cast<int>(obs.size());
 
 				return py::make_tuple(
-						py::array({e.NumStates(), e.GetEncodedObservationFlatLength()},
+						py::array({size, e.GetEncodedObservationFlatLength()},
 								e.EncodedStateObservations()),
-						py::array({e.NumStates(), e.ParentGame().MaxMoves()},
+						py::array({size, e.ParentGame().MaxMoves()},
 								e.EncodedLegalMoves())
 				);
 			},

@@ -3,6 +3,7 @@
 #include <vector>
 #include "../hanabi_lib/hanabi_observation.h"
 #include "representations.h"
+#include <bits/stdc++.h>
 
 namespace py = pybind11;
 namespace hle = hanabi_learning_env;
@@ -10,12 +11,75 @@ using HanabiObservationVector = std::vector<hle::HanabiObservation>;
 PYBIND11_MAKE_OPAQUE(HanabiObservationVector);
 
 void wrap_hanabi_observation(py::module& m) {
+
   py::class_<HanabiObservationVector>(m, "HanabiObservationVector")
     .def("__len__", [](const HanabiObservationVector &v) { return v.size(); })
     .def("__iter__", [](HanabiObservationVector &v) {
        return py::make_iterator(v.begin(), v.end());
-    }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
-    
+    }, py::keep_alive<0, 1>()) /* Keep vector alive while iterator is used */
+    .def("information_tokens",
+    	[](HanabiObservationVector& v)
+		{
+		  std::vector<int> it(v.size());
+		  for(int i=0;i<v.size();i++)
+			  it[i] = v[i].InformationTokens();
+		  return it;
+		}
+    )
+    .def("life_tokens",
+    	[](HanabiObservationVector& v)
+		{
+		  std::vector<int> lt(v.size());
+		  for(int i=0;i<v.size();i++)
+			  lt[i] = v[i].LifeTokens();
+		  return lt;
+		}
+    )
+	.def("scores",
+		[](HanabiObservationVector& v)
+		{
+		  std::vector<int> score(v.size());
+		  for(int i=0;i<v.size();i++){
+			  if(v[i].LifeTokens()==0) {
+				  score[i] = 0;
+			  } else {
+				  score[i] = std::accumulate(
+						  v[i].Fireworks().begin(),
+						  v[i].Fireworks().end(), 0);
+			  }
+		  }
+		  return score;
+		}
+	)
+	.def("max_scores",
+		[](HanabiObservationVector& v)
+		{
+		  std::vector<int> max_score(v.size());
+		  for(int i=0;i<v.size();i++)
+			  max_score[i] = v[i].MaximumScore();
+		  return max_score;
+		}
+	)
+	.def("card_knowledge_indicators",
+		[](HanabiObservationVector& v)
+		{
+		  std::vector<double> cki(v.size());
+		  for(int i=0;i<v.size();i++)
+			  cki[i] = v[i].CardKnowledgeIndicator();
+/*		  double playability_avg=0;
+		  std::vector<double> card_knowledge;
+
+		  for(int i=0;i<v.size();i++){
+			  playability_avg = v[i].AveragePlayability();
+			  card_knowledge = v[i].CommonPlayability();
+			  for(auto& c : card_knowledge)
+			      c = (c < playability_avg) ? playability_avg - c : c - playability_avg;
+			  result[i] = std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);
+		  }*/
+		  return cki;
+		}
+	);
+
   py::class_<hle::HanabiObservation>(m, "HanabiObservation")
     .def(py::init<hle::HanabiState&, const int>(),
          py::arg("state"),

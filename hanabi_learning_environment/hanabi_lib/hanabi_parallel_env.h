@@ -103,8 +103,8 @@ class HanabiParallelEnv {
   /** \brief Get observations for the specified agent.
    */
   const std::vector<HanabiObservation>& ObserveAgent(const int agent_id);
-
   const HanabiObservation& ObserveAgent(int agent_id, int idx);
+  const std::vector<HanabiObservation> ObserveAgent(const int agent_id, std::vector<int> idx);
 
   HanabiEncodedBatchObservation ObserveAgentEncoded(const int agent_id);
 

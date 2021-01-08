@@ -366,4 +366,44 @@ const HanabiCard HanabiObservation::GetCardToDiscard(int index) const {
 	return cards[index];
 }
 
+int HanabiObservation::MaximumScore() const {
+	int max_score = ParentGame()->MaxScore();
+	int num_colors = ParentGame()->NumColors();
+	int num_ranks = ParentGame()->NumRanks();
+	int rank_fw;
+	int num_discards;
+
+	// loop through all cards that still must be played
+	for(int i_color=0; i_color<num_colors; i_color++) {
+
+		rank_fw = Fireworks()[i_color];
+		for(int i_rank=rank_fw; i_rank<num_ranks; i_rank++) {
+
+			// count number of card instances in discard pile
+			num_discards = 0;
+			for (auto& card: DiscardPile()) {
+				if((card.Color() == i_color) && (card.Rank() == i_rank)) {
+					num_discards += 1;
+				}
+			}
+
+			if(num_discards == ParentGame()->NumberCardInstances(i_color, i_rank)) {
+				max_score -= (num_ranks - i_rank);
+				break;
+			}
+		}
+	}
+	return max_score;
+}
+
+double HanabiObservation::CardKnowledgeIndicator() const {
+	double playability_avg = AveragePlayability();
+	std::vector<double> card_knowledge = CommonPlayability();
+	// calculate absolute value of difference
+	for(auto& c : card_knowledge)
+		c = (c < playability_avg) ? playability_avg - c : c - playability_avg;
+	// sum of card knowledge
+	return std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);
+}
+
 }  // namespace hanabi_learning_env
