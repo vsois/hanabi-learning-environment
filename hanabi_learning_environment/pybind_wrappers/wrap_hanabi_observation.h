@@ -17,7 +17,7 @@ void wrap_hanabi_observation(py::module& m) {
     .def("__iter__", [](HanabiObservationVector &v) {
        return py::make_iterator(v.begin(), v.end());
     }, py::keep_alive<0, 1>()) /* Keep vector alive while iterator is used */
-    .def("information_tokens",
+    .def_property_readonly("information_tokens",
     	[](HanabiObservationVector& v)
 		{
 		  std::vector<int> it(v.size());
@@ -26,7 +26,7 @@ void wrap_hanabi_observation(py::module& m) {
 		  return it;
 		}
     )
-    .def("life_tokens",
+    .def_property_readonly("life_tokens",
     	[](HanabiObservationVector& v)
 		{
 		  std::vector<int> lt(v.size());
@@ -35,7 +35,7 @@ void wrap_hanabi_observation(py::module& m) {
 		  return lt;
 		}
     )
-	.def("score",
+	.def_property_readonly("score",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<int> score(v.size());
@@ -44,7 +44,7 @@ void wrap_hanabi_observation(py::module& m) {
 		  return score;
 		}
 	)
-	.def("max_score",
+	.def_property_readonly("max_score",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<int> max_score(v.size());
@@ -53,7 +53,7 @@ void wrap_hanabi_observation(py::module& m) {
 		  return max_score;
 		}
 	)
-	.def("card_knowledge_indicator",
+	.def_property_readonly("card_knowledge_indicator",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<double> cki(v.size());
@@ -158,28 +158,25 @@ void wrap_hanabi_observation(py::module& m) {
 		py::arg("index"),
 		"get card to discard by index"
 	)
-    .def("information_tokens",
-		(hle::HanabiCard (hle::HanabiObservation::*) () const)
-		&hle::HanabiObservation::InformationTokens,
-		"get number of information tokens"
-	)
-    .def("life_tokens",
-		(hle::HanabiCard (hle::HanabiObservation::*) () const)
-		&hle::HanabiObservation::LifeTokens,
-		"get number of life tokens"
-	)
-    .def("score",
-		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+//    .def("information_tokens",
+//		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+//		&hle::HanabiObservation::InformationTokens,
+//		"get number of information tokens"
+//	)
+//    .def("life_tokens",
+//		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+//		&hle::HanabiObservation::LifeTokens,
+//		"get number of life tokens"
+//	)
+    .def_property_readonly("score",
 		&hle::HanabiObservation::Score,
 		"get score"
 	)
-    .def("max_score",
-		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+    .def_property_readonly("max_score",
 		&hle::HanabiObservation::MaximumScore,
 		"get maximum score"
 	)
-    .def("card_knowledge_indicator",
-		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+    .def_property_readonly("card_knowledge_indicator",
 		&hle::HanabiObservation::CardKnowledgeIndicator,
 		"get card knowledge indicator"
 	)
