@@ -366,6 +366,14 @@ const HanabiCard HanabiObservation::GetCardToDiscard(int index) const {
 	return cards[index];
 }
 
+int HanabiObservation::Score() const {
+	if (LifeTokens() == 0) {
+		return 0;
+	} else {
+		return std::accumulate(Fireworks().begin(), Fireworks().end(), 0);
+	}
+}
+
 int HanabiObservation::MaximumScore() const {
 	int max_score = ParentGame()->MaxScore();
 	int num_colors = ParentGame()->NumColors();

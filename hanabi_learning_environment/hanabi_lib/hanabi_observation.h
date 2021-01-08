@@ -68,6 +68,7 @@ class HanabiObservation {
   std::vector<double> CommonPlayability() const;
   bool HandPossible(std::vector<HanabiCard>& hand) const;
   int MaximumScore() const;
+  int Score() const;
   double CardKnowledgeIndicator() const;
 
   // getter for pickle

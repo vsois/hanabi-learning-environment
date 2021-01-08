@@ -35,23 +35,16 @@ void wrap_hanabi_observation(py::module& m) {
 		  return lt;
 		}
     )
-	.def("scores",
+	.def("score",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<int> score(v.size());
-		  for(int i=0;i<v.size();i++){
-			  if(v[i].LifeTokens()==0) {
-				  score[i] = 0;
-			  } else {
-				  score[i] = std::accumulate(
-						  v[i].Fireworks().begin(),
-						  v[i].Fireworks().end(), 0);
-			  }
-		  }
+		  for(int i=0;i<v.size();i++)
+			  score[i] = v[i].Score();
 		  return score;
 		}
 	)
-	.def("max_scores",
+	.def("max_score",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<int> max_score(v.size());
@@ -60,22 +53,12 @@ void wrap_hanabi_observation(py::module& m) {
 		  return max_score;
 		}
 	)
-	.def("card_knowledge_indicators",
+	.def("card_knowledge_indicator",
 		[](HanabiObservationVector& v)
 		{
 		  std::vector<double> cki(v.size());
 		  for(int i=0;i<v.size();i++)
 			  cki[i] = v[i].CardKnowledgeIndicator();
-/*		  double playability_avg=0;
-		  std::vector<double> card_knowledge;
-
-		  for(int i=0;i<v.size();i++){
-			  playability_avg = v[i].AveragePlayability();
-			  card_knowledge = v[i].CommonPlayability();
-			  for(auto& c : card_knowledge)
-			      c = (c < playability_avg) ? playability_avg - c : c - playability_avg;
-			  result[i] = std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);
-		  }*/
 		  return cki;
 		}
 	);
@@ -174,6 +157,31 @@ void wrap_hanabi_observation(py::module& m) {
 		&hle::HanabiObservation::GetCardToDiscard,
 		py::arg("index"),
 		"get card to discard by index"
+	)
+    .def("information_tokens",
+		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+		&hle::HanabiObservation::InformationTokens,
+		"get number of information tokens"
+	)
+    .def("life_tokens",
+		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+		&hle::HanabiObservation::LifeTokens,
+		"get number of life tokens"
+	)
+    .def("score",
+		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+		&hle::HanabiObservation::Score,
+		"get score"
+	)
+    .def("max_score",
+		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+		&hle::HanabiObservation::MaximumScore,
+		"get maximum score"
+	)
+    .def("card_knowledge_indicator",
+		(hle::HanabiCard (hle::HanabiObservation::*) () const)
+		&hle::HanabiObservation::CardKnowledgeIndicator,
+		"get card knowledge indicator"
 	)
     .def("__str__", &hle::HanabiObservation::ToString)
     .def("__repr__", &hanabi_observation_repr)
