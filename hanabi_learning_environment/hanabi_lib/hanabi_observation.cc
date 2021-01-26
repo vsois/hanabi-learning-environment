@@ -133,6 +133,7 @@ bool HanabiObservation::CardPlayableOnFireworks(int color, int rank) const {
   return rank == fireworks_[color];
 }
 
+
 const std::vector<int> HanabiObservation::GetDefaultCardCounter() const {
 
 	int num_ranks = ParentGame()->NumRanks();
@@ -412,6 +413,72 @@ double HanabiObservation::CardKnowledgeIndicator() const {
 		c = (c < playability_avg) ? playability_avg - c : c - playability_avg;
 	// sum of card knowledge
 	return std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);
+}
+
+std::vector<double> HanabiObservation::DiscardablePercent(int player_id) const {
+
+	// get the card knowledge of the active player
+	const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[player_id].Knowledge();
+
+	// create the result vector with placeholder for each card in hand
+	std::vector<double> discardable(knowledge.size(), 0.0);
+
+	// get default card values
+	std::vector<int> default_card_counter = GetDefaultCardCounter();
+	// get discards
+	std::vector<int> common_card_counter = GetCommonCardCounter();
+
+	int num_ranks = ParentGame()->NumRanks();
+	int num_colors = ParentGame()->NumColors();
+	int num_players = ParentGame()->NumPlayers();
+
+	// loop through own card knowledge
+	int counter = 0;
+
+	for (const HanabiHand::CardKnowledge& card_knowledge : knowledge) {
+
+		// copy default card values
+		std::vector<int> this_card_counter = default_card_counter;
+		int num_discardable = 0;
+
+		for( int i_color = 0; i_color < num_colors; i_color++) {
+
+			for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
+
+				int index = i_color * num_ranks + i_rank;
+
+				// card hints
+				if(!card_knowledge.ColorPlausible(i_color) ||
+						!card_knowledge.RankPlausible(i_rank))
+					this_card_counter[index] = 0;
+
+				// discardable counter
+				// already played on fireworks
+				if (i_rank < fireworks_[i_color]) {
+					num_discardable += this_card_counter[index];
+				// cards of some lower rank are already discarded
+				} else {
+					for (int i_rank_lower = fireworks_[i_color]; i_rank_lower < i_rank; i_rank_lower++) {
+						if (common_card_counter[i_color*num_ranks + i_rank_lower] == 0) {
+							num_discardable += this_card_counter[index];
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// count possible cards
+		int num_total = std::accumulate(this_card_counter.begin(),
+				this_card_counter.end(), 0);
+
+		// calculate percentage
+		discardable[counter] = (float) num_discardable / num_total;
+		counter += 1;
+
+	}
+
+	return discardable;
 }
 
 }  // namespace hanabi_learning_env

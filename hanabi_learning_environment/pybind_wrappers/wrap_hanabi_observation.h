@@ -138,6 +138,10 @@ void wrap_hanabi_observation(py::module& m) {
 		&hle::HanabiObservation::PlayablePercent,
 		"Probability of card being playable on fireworks"
 	)
+	.def("discardable_percent",
+		&hle::HanabiObservation::DiscardablePercent,
+		"Probability of card being discardable"
+	)
 	.def("average_playability",
 		&hle::HanabiObservation::AveragePlayability,
 		"Playability of card not including car knowledge and other players cards"
