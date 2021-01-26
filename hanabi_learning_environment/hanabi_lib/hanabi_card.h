@@ -33,11 +33,19 @@ class HanabiCard {
   int Color() const { return color_; }
   int Rank() const { return rank_; }
   size_t Hash() const {return hasher_(ToString());}
+  double Playability() const {return playability_index_;}
+  double Discardability() const {return discardability_index_;}
+  void UpdatePlayability(double playability) { playability_index_ = playability; }
+  void UpdateDiscardability(double discardability) {
+	  discardability_index_ = discardability;
+  }
 
  private:
   ColorType color_ = ColorType::kUnknownColor;  // 0 indexed card color.
   RankType rank_ = RankType::kUnknownRank;   // 0 indexed card rank.
   std::hash<std::string> hasher_;
+  double playability_index_ = 0;
+  double discardability_index_ = 0;
 };
 
 }  // namespace hanabi_learning_env

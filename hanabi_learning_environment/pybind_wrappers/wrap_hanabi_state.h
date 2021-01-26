@@ -103,6 +103,14 @@ void wrap_hanabi_state(py::module& m) {
         &hle::HanabiState::MoveHistory,
         "Sequence of moves from beginning of game. Stored as <move, actor>."
     )
+	.def("average_playability",
+		&hle::HanabiState::AveragePlayability,
+		"Playability of card not including car knowledge and other players cards"
+	)
+	.def("common_playability",
+		&hle::HanabiState::CommonPlayability,
+		"Playability of all cards in hand not including knowledge about other players cards"
+	)
     
     .def("__str__", &hle::HanabiState::ToString)
     .def("__repr__", &hanabi_state_repr) 

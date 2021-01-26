@@ -51,6 +51,8 @@ void wrap_hanabi_card(py::module& m) {
     )
     .def_property_readonly("color", &hle::HanabiCard::Color)
     .def_property_readonly("rank", &hle::HanabiCard::Rank)
+	.def_property_readonly("playability", &hle::HanabiCard::Playability)
+	.def_property_readonly("discardability", &hle::HanabiCard::Discardability)
 
     .def("__repr__", &hanabi_card_repr)
     .def("__str__", &hle::HanabiCard::ToString);

@@ -65,9 +65,9 @@ class HanabiObservation {
   // returns for each card in hand probability of card being playable on fireworks
   std::vector<double> PlayablePercent() const;
   std::vector<double> DiscardablePercent(int player_id) const;
-  double AveragePlayability() const;
-  std::vector<double> CommonPlayability() const;
   bool HandPossible(std::vector<HanabiCard>& hand) const;
+
+  // observation metrics
   int MaximumScore() const;
   int Score() const;
   double CardKnowledgeIndicator() const;
@@ -75,7 +75,6 @@ class HanabiObservation {
   // getter for pickle
   const HanabiState* ParentState() const { return parent_state_; }
   int ObservingPlayer() const { return observing_player_; }
-
   const HanabiCard GetCardToDiscard(int index) const;
   
  private:
@@ -83,6 +82,7 @@ class HanabiObservation {
   int observing_player_;
   std::vector<HanabiHand> hands_;         // observing player is element 0
   std::vector<HanabiCard> discard_pile_;  // back is most recent discard
+  std::vector<HanabiCard> fireworks_pile_;  // back is most recent fireworks
   std::vector<int> fireworks_;
   int deck_size_;
   std::vector<HanabiHistoryItem> last_moves_;
@@ -91,8 +91,8 @@ class HanabiObservation {
   std::vector<HanabiMove> legal_moves_;  // list of legal moves
   const HanabiGame* parent_game_ = nullptr;
   const HanabiState* parent_state_;
+
   const std::vector<int> GetDefaultCardCounter() const;
-  const std::vector<int> GetCommonCardCounter() const;
 
 };
 

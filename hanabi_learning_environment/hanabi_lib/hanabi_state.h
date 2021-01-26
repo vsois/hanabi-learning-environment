@@ -107,10 +107,18 @@ class HanabiState {
   const HanabiDeck& Deck() const { return deck_; }
   // Get the discard pile (the element at the back is the most recent discard.)
   const std::vector<HanabiCard>& DiscardPile() const { return discard_pile_; }
+  const std::vector<HanabiCard>& FireworksPile() const { return fireworks_pile_; }
   // Sequence of moves from beginning of game. Stored as <move, actor>.
   const std::vector<HanabiHistoryItem>& MoveHistory() const {
     return move_history_;
   }
+
+  // for shaping, metrics that are player independent
+  double AveragePlayability() const;
+  double AverageDiscardability() const;
+  std::vector<double> CommonPlayability() const;
+  const std::vector<int> GetCommonCardCounter() const;
+  std::vector<double> CommonDiscardability() const;
 
  private:
   // Add card to table if possible, if not lose a life token.
@@ -131,11 +139,13 @@ class HanabiState {
   bool IncrementInformationTokens();
   void DecrementInformationTokens();
   void DecrementLifeTokens();
+  void UpdateCardValues();
 
   const HanabiGame* parent_game_ = nullptr;
   HanabiDeck deck_;
   // Back element of discard_pile_ is most recently discarded card.
   std::vector<HanabiCard> discard_pile_;
+  std::vector<HanabiCard> fireworks_pile_;
   std::vector<HanabiHand> hands_;
   std::vector<HanabiHistoryItem> move_history_;
   int cur_player_ = -1;
@@ -144,6 +154,7 @@ class HanabiState {
   int life_tokens_ = -1;
   std::vector<int> fireworks_;
   int turns_to_play_ = -1;  // Number of turns to play once deck is empty.
+
 };
 
 }  // namespace hanabi_learning_env

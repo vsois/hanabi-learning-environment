@@ -59,6 +59,7 @@ HanabiObservation::HanabiObservation(const HanabiState& state,
     : cur_player_offset_(PlayerToOffset(state.CurPlayer(), observing_player,
                                         state.ParentGame()->NumPlayers())),
       discard_pile_(state.DiscardPile()),
+	  fireworks_pile_(state.FireworksPile()),
       fireworks_(state.Fireworks()),
       deck_size_(state.Deck().Size()),
       information_tokens_(state.InformationTokens()),
@@ -119,9 +120,13 @@ std::string HanabiObservation::ToString() const {
     result += hands_[i].ToString();
   }
   result += "Deck size: " + std::to_string(DeckSize()) + "\n";
-  result += "Discards:";
+  result += "Discard Pile:";
   for (int i = 0; i < discard_pile_.size(); ++i) {
     result += " " + discard_pile_[i].ToString();
+  }
+  result += "\nFireworks Pile:";
+  for (int i = 0; i < fireworks_pile_.size(); ++i) {
+    result += " " + fireworks_pile_[i].ToString();
   }
   return result;
 }
@@ -169,116 +174,6 @@ const std::vector<int> HanabiObservation::GetDefaultCardCounter() const {
 
 }
 
-const std::vector<int> HanabiObservation::GetCommonCardCounter() const {
-
-	int num_ranks = ParentGame()->NumRanks();
-	int num_colors = ParentGame()->NumColors();
-	int num_players = ParentGame()->NumPlayers();
-	int offset = 0;
-
-	std::vector<int> output_vector(num_ranks*num_colors);
-
-	for (int i_color = 0; i_color < num_colors; i_color++) {
-
-		for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
-			// initial value
-			int index = i_color * num_ranks + i_rank;
-			output_vector[index] = ParentGame()->NumberCardInstances(i_color, i_rank);
-			// fireworks
-			if(i_rank < Fireworks()[i_color])
-				output_vector[index]--;
-		}
-	}
-
-	// discard pile
-	for (const HanabiCard& card : DiscardPile())
-		output_vector[card.Color() * num_ranks + card.Rank()]--;
-
-	return output_vector;
-
-}
-
-double HanabiObservation::AveragePlayability() const {
-
-	std::vector<int> default_card_counter = GetCommonCardCounter();
-
-	int num_ranks = ParentGame()->NumRanks();
-	int num_colors = ParentGame()->NumColors();
-	int num_playable = 0;
-
-	for( int i_color = 0; i_color < num_colors; i_color++) {
-
-		for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
-
-			int index = i_color * num_ranks + i_rank;
-
-			// playable counter
-			if (CardPlayableOnFireworks(i_color, i_rank))
-				num_playable += default_card_counter[index];
-		}
-	}
-	// count possible cards
-	int num_total = std::accumulate(default_card_counter.begin(),
-			default_card_counter.end(), 0);
-
-	return (float) num_playable / num_total;
-
-}
-
-std::vector<double> HanabiObservation::CommonPlayability() const {
-
-	std::vector<int> default_card_counter = GetCommonCardCounter();
-
-	int num_ranks = ParentGame()->NumRanks();
-	int num_colors = ParentGame()->NumColors();
-	int num_players = ParentGame()->NumPlayers();
-	int num_cards = ParentGame()->HandSize();
-
-	// create the result vector with placeholder for each card in hand
-	std::vector<double> playable(num_cards * num_players, 0.0);
-
-	for (int i_player; i_player < num_players; i_player++) {
-
-		// get the card knowledge of player and vector offset
-		const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[i_player].Knowledge();
-		int card_offset = i_player * num_cards;
-		int counter = 0;
-
-		// loop through cards in hand
-		for (const HanabiHand::CardKnowledge& card_knowledge : knowledge) {
-
-			// copy default card values
-			std::vector<int> this_card_counter = default_card_counter;
-			int num_playable = 0;
-
-			for( int i_color = 0; i_color < num_colors; i_color++) {
-
-				for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
-
-					int index = i_color * num_ranks + i_rank;
-
-					// card hints
-					if(!card_knowledge.ColorPlausible(i_color) ||
-							!card_knowledge.RankPlausible(i_rank))
-						this_card_counter[index] = 0;
-
-					// playable counter
-					if (CardPlayableOnFireworks(i_color, i_rank))
-						num_playable += this_card_counter[index];
-				}
-			}
-
-			// count possible cards
-			int num_total = std::accumulate(this_card_counter.begin(),
-					this_card_counter.end(), 0);
-
-			// calculate percentage
-			playable[card_offset + counter] = (float) num_playable / num_total;
-			counter += 1;
-		}
-	}
-	return playable;
-}
 
 std::vector<double> HanabiObservation::PlayablePercent() const {
 
@@ -406,14 +301,52 @@ int HanabiObservation::MaximumScore() const {
 }
 
 double HanabiObservation::CardKnowledgeIndicator() const {
-	double playability_avg = AveragePlayability();
-	std::vector<double> card_knowledge = CommonPlayability();
+
+	// get average playability / discardability and calculate value of deck
+	double playability_avg = parent_state_->AveragePlayability();
+	double discardability_avg = parent_state_->AverageDiscardability();
+
+	double deck_card_value = (playability_avg < discardability_avg) ?
+			discardability_avg - playability_avg :
+			playability_avg - discardability_avg;
+
+	double deck_value = deck_card_value * deck_size_;
+
+	// calculate value of discards
+	double discards_value = 0;
+	for(const HanabiCard& c : discard_pile_)
+		discards_value += (c.Discardability() - c.Playability());
+
+	// calculate value of fireworks
+	double fireworks_value = 0;
+	for(const HanabiCard& c : fireworks_pile_)
+		fireworks_value += (c.Playability() - c.Discardability());
+
+	// calculate value of hand cards
+	double hands_value = 0;
+	for (int i_player = 0; i_player < ParentGame()->NumPlayers(); i_player++) {
+
+		for(const HanabiCard& c : hands_[i_player].Cards()) {
+			double hands_card_value = (c.Playability() < c.Discardability()) ?
+					c.Discardability() - c.Playability() :
+					c.Playability() - c.Discardability();
+			hands_value += hands_card_value;
+		}
+	}
+
+	return deck_value + discards_value + fireworks_value + hands_value;
+
+/*	double playability_avg = parent_state_->AveragePlayability();
+	std::vector<double> card_knowledge = parent_state_->CommonPlayability();
 	// calculate absolute value of difference
 	for(auto& c : card_knowledge)
 		c = (c < playability_avg) ? playability_avg - c : c - playability_avg;
 	// sum of card knowledge
-	return std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);
+	return std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);*/
 }
+
+
+
 
 std::vector<double> HanabiObservation::DiscardablePercent(int player_id) const {
 
@@ -426,7 +359,7 @@ std::vector<double> HanabiObservation::DiscardablePercent(int player_id) const {
 	// get default card values
 	std::vector<int> default_card_counter = GetDefaultCardCounter();
 	// get discards
-	std::vector<int> common_card_counter = GetCommonCardCounter();
+	std::vector<int> common_card_counter = parent_state_->GetCommonCardCounter();
 
 	int num_ranks = ParentGame()->NumRanks();
 	int num_colors = ParentGame()->NumColors();

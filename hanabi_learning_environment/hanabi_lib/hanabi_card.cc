@@ -26,7 +26,11 @@ std::string HanabiCard::ToString() const {
   if (!IsValid()) {
     return std::string("XX");
   }
-  return std::string() + ColorIndexToChar(Color()) + RankIndexToChar(Rank());
+  return std::string() +
+		  ColorIndexToChar(Color()) +
+		  RankIndexToChar(Rank()) +
+		  " (" + std::to_string(playability_index_) +
+		  "/" + std::to_string(discardability_index_) + ")";
 }
 
 }  // namespace hanabi_learning_env

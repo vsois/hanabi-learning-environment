@@ -142,14 +142,6 @@ void wrap_hanabi_observation(py::module& m) {
 		&hle::HanabiObservation::DiscardablePercent,
 		"Probability of card being discardable"
 	)
-	.def("average_playability",
-		&hle::HanabiObservation::AveragePlayability,
-		"Playability of card not including car knowledge and other players cards"
-	)
-	.def("common_playability",
-		&hle::HanabiObservation::CommonPlayability,
-		"Playability of all cards in hand not including knowledge about other players cards"
-	)
 	.def("hand_possible",
 		(bool (hle::HanabiObservation::*) (const std::vector<hle::HanabiCard>&))
 		&hle::HanabiObservation::HandPossible,

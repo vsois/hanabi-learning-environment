@@ -125,6 +125,17 @@ uint8_t HanabiHand::RevealRank(const int rank) {
   return mask;
 }
 
+void HanabiHand::UpdatePlayability(std::vector<double>::iterator playability_start) {
+	for (int i = 0; i < cards_.size(); i++)
+		cards_[i].UpdatePlayability(*(playability_start+i));
+}
+
+void HanabiHand::UpdateDiscardability(
+		std::vector<double>::iterator discardability_start) {
+	for (int i = 0; i < cards_.size(); i++)
+		cards_[i].UpdateDiscardability(*(discardability_start+i));
+}
+
 std::string HanabiHand::ToString() const {
   std::string result;
   assert(cards_.size() == card_knowledge_.size());

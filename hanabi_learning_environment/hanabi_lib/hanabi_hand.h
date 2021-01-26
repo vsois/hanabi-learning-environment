@@ -117,6 +117,8 @@ class HanabiHand {
   // Returns new information bitmask, bit_i set if card_i color was revealed
   // and was previously unknown.
   uint8_t RevealColor(int color);
+  void UpdatePlayability(std::vector<double>::iterator playability_start);
+  void UpdateDiscardability(std::vector<double>::iterator discardability_start);
   std::string ToString() const;
 
  private:
