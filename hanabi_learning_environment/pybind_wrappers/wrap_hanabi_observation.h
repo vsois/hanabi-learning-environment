@@ -185,6 +185,10 @@ void wrap_hanabi_observation(py::module& m) {
 		&hle::HanabiObservation::CardKnowledgeIndicator,
 		"get card knowledge indicator"
 	)
+	.def_property_readonly("playability_indicator",
+		&hle::HanabiObservation::PlayabilityIndicator,
+		"get playability indicator"
+	)
     .def("__str__", &hle::HanabiObservation::ToString)
     .def("__repr__", &hanabi_observation_repr)
     .doc() = "Agent observation of a HanabiState.";
