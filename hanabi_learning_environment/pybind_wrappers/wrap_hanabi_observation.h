@@ -61,6 +61,15 @@ void wrap_hanabi_observation(py::module& m) {
 			  cki[i] = v[i].CardKnowledgeIndicator();
 		  return cki;
 		}
+	)
+	.def_property_readonly("playability_indicator",
+		[](HanabiObservationVector& v)
+		{
+		  std::vector<double> pi(v.size());
+		  for(int i=0;i<v.size();i++)
+			  pi[i] = v[i].PlayabilityIndicator();
+		  return pi;
+		}
 	);
 
   py::class_<hle::HanabiObservation>(m, "HanabiObservation")

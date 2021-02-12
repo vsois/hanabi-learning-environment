@@ -71,6 +71,7 @@ class HanabiObservation {
   int MaximumScore() const;
   int Score() const;
   double CardKnowledgeIndicator() const;
+  double PlayabilityIndicator() const;
 
   // getter for pickle
   const HanabiState* ParentState() const { return parent_state_; }

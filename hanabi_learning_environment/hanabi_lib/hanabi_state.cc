@@ -654,7 +654,7 @@ std::vector<double> HanabiState::CommonKnowledge() const {
 void HanabiState::UpdateCardValues() {
 
 	//double playability_avg = AveragePlayability();
-	//std::vector<double> card_playability = CommonPlayability();
+	std::vector<double> card_playability = CommonPlayability();
 	//std::vector<double> card_discardability = CommonDiscardability();
 	std::vector<double> card_knowledge = CommonKnowledge();
 	// calculate difference
@@ -666,7 +666,7 @@ void HanabiState::UpdateCardValues() {
 
 	for (int i_player; i_player < num_players; i_player++) {
 		int card_offset = i_player * num_cards;
-		//hands_[i_player].UpdatePlayability(card_playability.begin() + card_offset);
+		hands_[i_player].UpdatePlayability(card_playability.begin() + card_offset);
 		//hands_[i_player].UpdateDiscardability(card_discardability.begin() + card_offset);
 		hands_[i_player].UpdateCardKnowledge(card_knowledge.begin() + card_offset);
 	}

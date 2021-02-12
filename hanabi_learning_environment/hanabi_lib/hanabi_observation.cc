@@ -300,6 +300,37 @@ int HanabiObservation::MaximumScore() const {
 	return max_score;
 }
 
+double HanabiObservation::PlayabilityIndicator() const {
+
+	double playability_avg = parent_state_->AveragePlayability();
+	double deck_value = deck_size_ ? (playability_avg > 0.8) : 0;
+
+	double discards_value = 0;
+	for(const HanabiCard& c : discard_pile_) {
+		if(c.Playability() > 0.8)
+			discards_value += 1;
+	}
+
+	double fireworks_value = 0;
+	for(const HanabiCard& c : fireworks_pile_) {
+		if (c.Playability() > 0.8)
+			fireworks_value += 1;
+	}
+
+	// calculate value of hand cards
+	double hands_value = 0;
+	for (int i_player = 0; i_player < ParentGame()->NumPlayers(); i_player++) {
+
+		for(const HanabiCard& c : hands_[i_player].Cards()) {
+			if (c.Playability() > 0.8)
+				hands_value += 1;
+		}
+	}
+
+	return deck_value + discards_value + fireworks_value + hands_value;
+
+}
+
 double HanabiObservation::CardKnowledgeIndicator() const {
 
 	// get average playability / discardability and calculate value of deck
@@ -352,8 +383,6 @@ double HanabiObservation::CardKnowledgeIndicator() const {
 	// sum of card knowledge
 	return std::accumulate(card_knowledge.begin(), card_knowledge.end(), 0.0);*/
 }
-
-
 
 
 std::vector<double> HanabiObservation::DiscardablePercent() const {
