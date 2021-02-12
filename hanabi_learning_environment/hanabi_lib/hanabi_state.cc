@@ -433,7 +433,6 @@ double HanabiState::AveragePlayability() const {
 
 }
 
-
 double HanabiState::AverageDiscardability() const {
 
 	std::vector<int> default_card_counter = GetCommonCardCounter();
@@ -467,6 +466,17 @@ double HanabiState::AverageDiscardability() const {
 			default_card_counter.end(), 0);
 
 	return (float) num_discardable / num_total;
+
+}
+
+double HanabiState::AverageKnowledge() const {
+
+	std::vector<int> default_card_counter = GetCommonCardCounter();
+
+	// calculate number of cards not possible
+	int num_possible = std::accumulate(default_card_counter.begin(),
+			default_card_counter.end(), 0);
+	return 1 - (float) num_possible / ParentGame()->MaxDeckSize();
 
 }
 
@@ -591,11 +601,62 @@ std::vector<double> HanabiState::CommonDiscardability() const {
 	return discardable;
 }
 
+std::vector<double> HanabiState::CommonKnowledge() const {
+
+	std::vector<int> default_card_counter = GetCommonCardCounter();
+
+	int num_ranks = ParentGame()->NumRanks();
+	int num_colors = ParentGame()->NumColors();
+	int num_players = ParentGame()->NumPlayers();
+	int num_cards = ParentGame()->HandSize();
+	int num_deck = ParentGame()->MaxDeckSize();
+
+	// create the result vector with placeholder for each card in hand
+	std::vector<double> common_knowledge(num_cards * num_players, 0.0);
+
+	for (int i_player; i_player < num_players; i_player++) {
+
+		// get the card knowledge of player and vector offset
+		const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[i_player].Knowledge();
+		int card_offset = i_player * num_cards;
+		int counter = 0;
+
+		// loop through cards in hand
+		for (const HanabiHand::CardKnowledge& card_knowledge : knowledge) {
+
+			// copy default card values
+			std::vector<int> this_card_counter = default_card_counter;
+			int num_discardable = 0;
+
+			for( int i_color = 0; i_color < num_colors; i_color++) {
+
+				for (int i_rank = 0; i_rank < num_ranks; i_rank++) {
+
+					int index = i_color * num_ranks + i_rank;
+
+					// card hints
+					if(!card_knowledge.ColorPlausible(i_color) ||
+							!card_knowledge.RankPlausible(i_rank))
+						this_card_counter[index] = 0;
+				}
+			}
+
+			// calculate number of cards not possible
+			int num_possible = std::accumulate(this_card_counter.begin(),
+					this_card_counter.end(), 0);
+			common_knowledge[card_offset + counter] = 1 - (float) num_possible / num_deck;
+			counter += 1;
+		}
+	}
+	return common_knowledge;
+}
+
 void HanabiState::UpdateCardValues() {
 
 	//double playability_avg = AveragePlayability();
-	std::vector<double> card_playability = CommonPlayability();
-	std::vector<double> card_discardability = CommonDiscardability();
+	//std::vector<double> card_playability = CommonPlayability();
+	//std::vector<double> card_discardability = CommonDiscardability();
+	std::vector<double> card_knowledge = CommonKnowledge();
 	// calculate difference
 	//for(auto& c : card_playability)
 	//	c -= playability_avg;
@@ -605,8 +666,9 @@ void HanabiState::UpdateCardValues() {
 
 	for (int i_player; i_player < num_players; i_player++) {
 		int card_offset = i_player * num_cards;
-		hands_[i_player].UpdatePlayability(card_playability.begin() + card_offset);
-		hands_[i_player].UpdateDiscardability(card_discardability.begin() + card_offset);
+		//hands_[i_player].UpdatePlayability(card_playability.begin() + card_offset);
+		//hands_[i_player].UpdateDiscardability(card_discardability.begin() + card_offset);
+		hands_[i_player].UpdateCardKnowledge(card_knowledge.begin() + card_offset);
 	}
 }
 

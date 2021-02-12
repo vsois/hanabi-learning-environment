@@ -35,9 +35,13 @@ class HanabiCard {
   size_t Hash() const {return hasher_(ToString());}
   double Playability() const {return playability_index_;}
   double Discardability() const {return discardability_index_;}
+  double CardKnowledge() const {return card_knowledge_index_;}
   void UpdatePlayability(double playability) { playability_index_ = playability; }
   void UpdateDiscardability(double discardability) {
 	  discardability_index_ = discardability;
+  }
+  void UpdateCardKnowledge(double card_knowledge) {
+	  card_knowledge_index_ = card_knowledge;
   }
 
  private:
@@ -46,6 +50,7 @@ class HanabiCard {
   std::hash<std::string> hasher_;
   double playability_index_ = 0;
   double discardability_index_ = 0;
+  double card_knowledge_index_ = 0;
 };
 
 }  // namespace hanabi_learning_env

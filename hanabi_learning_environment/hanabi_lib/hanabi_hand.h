@@ -119,6 +119,7 @@ class HanabiHand {
   uint8_t RevealColor(int color);
   void UpdatePlayability(std::vector<double>::iterator playability_start);
   void UpdateDiscardability(std::vector<double>::iterator discardability_start);
+  void UpdateCardKnowledge(std::vector<double>::iterator card_knowledge_start);
   std::string ToString() const;
 
  private:

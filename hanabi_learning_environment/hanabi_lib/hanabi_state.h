@@ -116,9 +116,11 @@ class HanabiState {
   // for shaping, metrics that are player independent
   double AveragePlayability() const;
   double AverageDiscardability() const;
+  double AverageKnowledge() const;
   std::vector<double> CommonPlayability() const;
-  const std::vector<int> GetCommonCardCounter() const;
   std::vector<double> CommonDiscardability() const;
+  std::vector<double> CommonKnowledge() const;
+  const std::vector<int> GetCommonCardCounter() const;
 
  private:
   // Add card to table if possible, if not lose a life token.

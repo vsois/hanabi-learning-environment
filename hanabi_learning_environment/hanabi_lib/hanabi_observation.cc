@@ -303,34 +303,42 @@ int HanabiObservation::MaximumScore() const {
 double HanabiObservation::CardKnowledgeIndicator() const {
 
 	// get average playability / discardability and calculate value of deck
-	double playability_avg = parent_state_->AveragePlayability();
+/*	double playability_avg = parent_state_->AveragePlayability();
 	double discardability_avg = parent_state_->AverageDiscardability();
 
 	double deck_card_value = (playability_avg < discardability_avg) ?
 			discardability_avg - playability_avg :
-			playability_avg - discardability_avg;
+			playability_avg - discardability_avg;*/
 
+	double deck_card_value = parent_state_->AverageKnowledge();
 	double deck_value = deck_card_value * deck_size_;
 
 	// calculate value of discards
+/*	double discards_value = 0;
+	for(const HanabiCard& c : discard_pile_)
+		discards_value += (c.Discardability() - c.Playability());*/
 	double discards_value = 0;
 	for(const HanabiCard& c : discard_pile_)
-		discards_value += (c.Discardability() - c.Playability());
+		discards_value += c.CardKnowledge();
 
 	// calculate value of fireworks
+/*	double fireworks_value = 0;
+	for(const HanabiCard& c : fireworks_pile_)
+		fireworks_value += (c.Playability() - c.Discardability());*/
 	double fireworks_value = 0;
 	for(const HanabiCard& c : fireworks_pile_)
-		fireworks_value += (c.Playability() - c.Discardability());
+		fireworks_value += c.CardKnowledge();
 
 	// calculate value of hand cards
 	double hands_value = 0;
 	for (int i_player = 0; i_player < ParentGame()->NumPlayers(); i_player++) {
 
 		for(const HanabiCard& c : hands_[i_player].Cards()) {
-			double hands_card_value = (c.Playability() < c.Discardability()) ?
+/*			double hands_card_value = (c.Playability() < c.Discardability()) ?
 					c.Discardability() - c.Playability() :
 					c.Playability() - c.Discardability();
-			hands_value += hands_card_value;
+			hands_value += hands_card_value;*/
+			hands_value += c.CardKnowledge();
 		}
 	}
 
@@ -348,10 +356,10 @@ double HanabiObservation::CardKnowledgeIndicator() const {
 
 
 
-std::vector<double> HanabiObservation::DiscardablePercent(int player_id) const {
+std::vector<double> HanabiObservation::DiscardablePercent() const {
 
 	// get the card knowledge of the active player
-	const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[player_id].Knowledge();
+	const std::vector<HanabiHand::CardKnowledge>& knowledge = hands_[0].Knowledge();
 
 	// create the result vector with placeholder for each card in hand
 	std::vector<double> discardable(knowledge.size(), 0.0);

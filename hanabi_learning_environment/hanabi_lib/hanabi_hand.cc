@@ -136,6 +136,12 @@ void HanabiHand::UpdateDiscardability(
 		cards_[i].UpdateDiscardability(*(discardability_start+i));
 }
 
+void HanabiHand::UpdateCardKnowledge(
+		std::vector<double>::iterator card_knowledge_start) {
+	for (int i = 0; i < cards_.size(); i++)
+		cards_[i].UpdateCardKnowledge(*(card_knowledge_start+i));
+}
+
 std::string HanabiHand::ToString() const {
   std::string result;
   assert(cards_.size() == card_knowledge_.size());
